@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-md-6 m-auto">
+    <div class="container mt-5 pl-5">
+      <h2 class="text-center">{{church.churchName}}</h2>
+      <form action"/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/viewPayment/{{result._id}}/{{result.date}}/{{result.amt}}"
+        method="post">
+        <label for="churchId">ChurchId</label>
+        <input type="text" name="_id" class="form-control" value="{{result._id}}">
+        <label for="date">Date</label>
+        <input type="text" name="date" class="form-control" value="{{result.date}}">
+        <label for="amount">Amount</label>
+        <input type="text" name="amt" class="form-control" value="{{result.amt}} ">
+        <label for="status">status</label>
+        <input type="text" name="status" class="form-control" value="{{result.status}}">
+        <label for="payDate">billDate</label>
+        <input type="text" name="payDate" class="form-control" value="{{result.payDate}}">
+        <label for="trId">Transaction Id</label>
+        <input type="text" name="trId" class="form-control" value="{{result.trId}}">
+        <br>
+        <br>
+        <button type="submit" class="btn btn-primary ">update</button>
+      </form>
+    </div>
+  </div>
+</div>
+ <div class="row">
+  <div class="col-md-6 m-auto">
+    <div class="container mt-5 pl-5">
+         <label for="accName">accName</label>
+                    <input type="text" name="accName" class="form-control" value="{{church.accName}}">
+                     <label for="accNo">Account Number</label>
+                    <input type="text" name="accNo" class="form-control" value="{{church.accNo}}">
+                     <label for="ifsc">IFSC</label>
+                    <input type="text" name="ifsc" class="form-control" value="{{church.ifsc}}">
+
+                    <br>
+                    <br>
+      <label for="churchId">ChurchId</label>
+      <input type="text" name="Id" class="form-control" value="{{church._id}}">
+      <label for="username">username</label>
+      <input type="text" name="username" class="form-control" value="{{church.username}} ">
+      <label for="Phone">Phone</label>
+      <input type="text" name="phone" class="form-control" value="{{church.phone}}">
+      <label for="priest Name">priestName</label>
+      <input type="text" name="priestName" class="form-control" value="{{church.priest.name}}">
+      <label for="priestPhone">priest Phone</label>
+      <input type="text" name="priestPhone" class="form-control" value="{{church.priest.phone}}">
+      <br>
+    </div>
+
+  </div>
+
+</div>

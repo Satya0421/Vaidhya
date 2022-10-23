@@ -1,0 +1,32 @@
+<section>
+  <div class="container">
+    <h3 >Churches Reports</h3>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">ChurchName</th>
+          <th scope="col">Report</th>
+          <th scope="col">Reported user Id</th>
+          <th scope="col">Phone</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each report}}
+        <tr>
+          <td>{{this.churchName}}</td>
+          <td>{{this.report}}</td>
+          <td>{{this.userId}}</td>
+        <td>{{this.phone}}</td><br>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#churchTable').DataTable();
+  });
+</script>

@@ -1,0 +1,37 @@
+<section>
+  <div class="container">
+    <h3 >{{this.status}}Churches</h3>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">ChurchName</th>
+          <th scope="col">Username</th>
+          <th scope="col">district</th>     
+          <th scope="col">phone</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each church}}
+        <tr>
+           <td>{{this._id}}</td>
+          <td>{{this.churchName}}</td>
+          <td>{{this.username}}</td>
+          <td>{{this.district}}</td>
+        
+        <td>{{this.phone}}</td><br>
+          <td><a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-churches/{{this._id}} " class="btn btn-primary">View</a>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#churchTable').DataTable();
+  });
+</script>

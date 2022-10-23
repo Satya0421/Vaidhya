@@ -1,0 +1,56 @@
+ <div class="container">
+    <h3 >{{this.status}}Churches</h3>
+    <br>
+ </div>
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">Search</h2>
+            <form action"/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-churchRecentPayment" method="post">
+                <div class="form-group">
+                        <input type="text" class="form-control" name="_id" id="_id"  placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-primary float-right">search</button>
+            </form>
+        </div>
+    </div>
+</div>
+<section>
+ <div>
+   <br>
+
+     <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Pay Id</th>
+          <th scope="col">Razor Id</th>
+          <th scope="col">Date</th>
+          <th scope="col">name</th>
+          <th scope="col">type</th>
+          <th scope="col">amt</th>
+           <th scope="col">phone</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each result}}
+        <tr>
+          <td>{{this.pay_id}}</td>
+           <td>{{this.razoId}}</td>
+          <td>{{this.date}}</td>
+          <td>{{this.name}}</td>
+           <td>{{this.type}}</td>
+          <td>{{this.amt}}</td>
+            <td>{{this.phone}}</td>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#churchTable').DataTable();
+  });
+</script>

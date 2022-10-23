@@ -1,0 +1,30 @@
+<section>
+  <div class="container">
+    <h3 >Churches Posts</h3>
+    <br>
+    <table class="table mt-5" id="postTable">
+      <thead>
+        <tr>
+          <th scope="col">ChurchName</th>
+          <th scope="col">Post</th>
+          <th scope="col">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each post}}
+        <tr>
+          <td>{{this.churchName}}</td>
+          <td>{{this.content}}</td>
+          <td><a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/deletePost/{{this._id}} " class="btn btn-danger" onclick="return  confirm('are you want to Delete {{this.church_name}}')">Delete</a>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#postTable').DataTable();
+  });
+</script>

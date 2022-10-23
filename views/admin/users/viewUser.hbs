@@ -1,0 +1,40 @@
+<section>
+  <div class="container">
+    <h3 >{{this.status}}Users</h3>
+    <br>
+    <table class="table mt-8" id="beliverTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Username</th>
+          <th scope="col">Name</th>
+          <th scope="col">parish</th>
+          <th scope="col">State</th>
+          <th scope="col">phone</th>
+          <th scope="col">block</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each beliver}}
+        <tr>
+          <td>{{this._id}}</td>
+          <td>{{this.username}}</td>
+          <td>{{this.name}}</td>
+          <td>{{this.parish}}</td>
+         <td>{{this.state}}</td>
+        <td>{{this.phone}}</td><br>
+          <td>      
+               <a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/activeUser/{{this._id}}" class="btn btn-primary">Active</a>
+            <br><div></div>
+            <a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/blockUser/{{this._id}}" class="btn btn-danger" onclick="return confirm('are you want to block {{this.username}}'">Block</a>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#beliverTable').DataTable();
+  });
+</script>

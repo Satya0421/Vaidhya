@@ -1,0 +1,84 @@
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">{{church.churchName}}</h2>
+            <form action"/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-churches/{{this._id}}" method="post">
+                    <label for="username">username</label>
+                    <input type="text" name="username" class="form-control" value="{{church.username}} ">
+                     <label for="saint">Id</label>
+                    <input type="text" name="saint" class="form-control" value="{{church._id}} ">
+                      <label for="Phone">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{church.phone}}">
+                     <label for="arch">arch</label>
+                    <input type="text" name="place" class="form-control" value="{{church.place}}">
+                     <label for="district">district</label>
+                    <input type="text" name="district" class="form-control" value="{{church.district}}">
+                     <label for="state">state</label>
+                    <input type="text" name="state" class="form-control" value="{{church.state}}">
+                      <label for="Nation">Nation</label>
+                    <input type="text" name="nation" class="form-control" value="{{church.nation}}">
+                      <label for="Pincode">Pincode</label>
+                    <input type="text" name="pincode" class="form-control" value="{{church.pincode}}">
+                      <label for="priest Name">priestName</label>
+                    <input type="text" name="priestName" class="form-control" value="{{church.priest.name}}">
+                     <label for="priestPhone">priest Phone</label>
+                    <input type="text" name="priestPhone" class="form-control" value="{{church.priest.phone}}">
+                     <label for="about">about</label>
+                    <input type="text" name="about" class="form-control" value="{{church.about}}">
+
+                    <label for="accName">accName</label>
+                    <input type="text" name="accName" class="form-control" value="{{church.accName}}">
+                     <label for="accNo">Account Number</label>
+                    <input type="text" name="accNo" class="form-control" value="{{church.accNo}}">
+                     <label for="ifsc">IFSC</label>
+                    <input type="text" name="ifsc" class="form-control" value="{{church.ifsc}}">
+
+                     <label for="location">location</label>
+                    <input type="text" name="location" class="form-control" value="{{church.location.coordinates}}">
+                    <label for="lvl">lvl</label>
+                    <input type="text" name="lvl" class="form-control" value="{{church.lvl}}">
+                     <label for="tabelNumber">tableNumber</label>
+                     <br>
+                    <input type="text" name="status" class="form-control" value="{{church.booking_table}}">
+                   <br>
+                <button type="submit" class="btn btn-primary ">update</button>
+            </form>
+          </div>
+          <form method="post" encType="multipart/form-data" action='/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/update-image/{{church._id}}'>
+              <div><br>
+              <br>
+                  <b><label for="Image">Image</label></b>
+                    <p></p>
+                    <img src="/uploads/churchImages/{{church._id}}.jpg" alt="np found" style="width:200px; height:auto" id="imgView" class="pt-3 pb-3">
+                    <br>
+                    <p></p>
+                    <input type="File" name="Image" class="form-control" onchange="viewImage(event)">
+                    <br>
+                    <button type="submit" class="btn btn-success mt-4">Update</button>
+             </div>
+        </form>
+
+        <form>
+          <div>
+                    <br>
+
+                     <img src="/uploads/church-letterPad/{{church._id}}.jpg" alt="np found" style="width:200px; height:auto" id="letterPadView" class="pt-3 pb-3">
+                  <br>
+                      <label for="price">Active Status</label>
+                    <input type="text" name="price" class="form-control" value="{{church.status}}">
+                    <br>
+                     <a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-churches/active/{{church._id}}/{{church.username}}" class="btn btn-primary">Active</a>
+                    <a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-churches/block/{{church._id}}" class="btn btn-danger" onclick="return confirm('are you want to block {{church.username}}')">Block</a>
+                    <br>
+                    <br>
+            </div>
+          </form>
+        </div>
+
+    </div>
+</div>
+<script>
+    function viewImage(event){
+        document.getElementById('imgView').src=URL.createObjectURL(event.target.files[0]) //to access new image
+    }
+</script>

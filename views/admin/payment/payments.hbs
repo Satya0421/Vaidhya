@@ -1,0 +1,40 @@
+<section>
+  <div class="container">
+    <h3 >{{this.status}}Churches</h3>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Pay Id</th>
+            <th scope="col">Razor Id</th>
+          <th scope="col">Date</th>
+          <th scope="col">name</th>
+          <th scope="col">type</th>
+          <th scope="col">amt</th>
+           <th scope="col">phone</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each Payments}}
+        <tr>
+           <td>{{this._id}}</td>
+          <td>{{this.payments.pay_id}}</td>
+           <td>{{this.payments.razoId}}</td>
+          <td>{{this.payments.date}}</td>
+          <td>{{this.payments.name}}</td>
+           <td>{{this.payments.type}}</td>
+          <td>{{this.payments.amt}}</td>
+            <td>{{this.payments.phone}}</td>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#churchTable').DataTable();
+  });
+</script>
