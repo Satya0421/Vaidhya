@@ -1,0 +1,52 @@
+<div class="container">
+    <h3>{{this.status}}</h3>
+    <br>
+</div>
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">Add Cities</h2>
+            <form action"adminPanel/VidhyA789/addcities" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="city" id="city" placeholder="city">
+                    <br>
+                    <input type="text" class="form-control" name="longtitude" id="longtitude" placeholder="longtitude">
+                    <br>
+                    <input type="text" class="form-control" name="latitude" id="latitude" placeholder="latitude">
+                </div>
+                <button type="submit" class="btn btn-primary float-right">Add City</button>
+                 <br>
+            </form>
+        </div>
+    </div>
+</div>
+ <br>
+<section>
+    <div class="container">
+        <table class="table mt-5" id="churchTable">
+            <thead>
+                <tr>
+                    <th scope="col">City</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each result}}
+                <tr>
+                    <td>{{this.city}}</td>
+
+                    <td><a href="/adminPanel/VidhyA789/deletecities/{{this.city}}"
+                            class="btn btn-danger">Delete</a>
+                        <!-- send the value use query-->
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    </div>
+</section>
+<script>
+    $(function () {
+        $('#churchTable').DataTable();
+    });
+</script>

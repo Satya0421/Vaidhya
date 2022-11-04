@@ -1,0 +1,80 @@
+<div class="container">
+    <h3>{{this.status}}</h3>
+    <br>
+</div>
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">Search</h2>
+            <form action"adminPanel/VidhyA789/doctors_bookings" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="_id" id="_id" placeholder="Search">
+                    <br>
+                    <label for="month">select Month:</label>
+
+                    <select name="month" id="month">
+                        <option value="01">01</option>
+                        <option value="02">02</option>
+                        <option value="03">03</option>
+                        <option value="04">04</option>
+                        <option value="05">05</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <label for="year">Select year:</label>
+
+                    <select name="year" id="year">
+                        <option value="2022">2022</option>
+                        <option value="2022">2023</option>
+                        <option value="2022">2024</option>
+                        <option value="2022">2025</option>
+                        <option value="2022">2026</option>
+                        <option value="2022">2027</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary float-right">search</button>
+            </form>
+        </div>
+    </div>
+</div>
+<section>
+    <table class="table mt-5" id="churchTable">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">Patient Name</th>
+                <th scope="col">patientid</th>
+                <th scope="col">fees</th>
+                <th scope="col">status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each result}}
+            <tr>
+                <td>{{this.date}}</td>
+                <td>{{this.time}}</td>
+                <td>{{this.patientname}}</td>
+                <td>{{this.patientid}}</td>
+                <td>{{this.fees}}</td>
+                <td>{{this.status}}</td>
+                {{!-- <td><a
+                        href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/detailed_payment/{{this.church_id}}/{{this.pay_id}}/{{this.church_name}} "
+                        class="btn btn-primary">View</a> --}}
+                    <!-- send the value use query-->
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    </div>
+</section>
+<script>
+    $(function () {
+        $('#churchTable').DataTable();
+    });
+</script>

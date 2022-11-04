@@ -6,10 +6,12 @@ module.exports={
     LISTOFITEMS:'listofItems',
     DOCTORSPAYMENT:'doctorspayment',
     WITHDRAWPAYMENT:'withdraw_payment',
-    DOCTORSDAILYSLOT:'doctorsdailySlot'
+    DOCTORSDAILYSLOT:'doctorsdailySlot',
+    BANNERCOLLECTION:'banner_collection',
+    ADMIN_COLLECTION:'admin',
     // BELIVERS:'belivers',
     // BELIVERS_CART:'beliverCart',
-    // ADMIN_COLLECTION:'admin',
+   
     // SUPER_COLLECTION:'superImage',
     // CHURCH_REPORT_COLLECTION:'churchReport',
     // CHURCH_MASS_BOOKING:'massBooking',

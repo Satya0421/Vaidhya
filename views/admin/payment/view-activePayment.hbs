@@ -5,7 +5,7 @@
     <table class="table mt-5" id="churchTable">
       <thead>
         <tr>
-          <th scope="col">ChurchId</th>
+          <th scope="col">DoctorsId</th>
           <th scope="col">Date</th>
           <th scope="col">Amount</th>
           <th scope="col">status</th>
@@ -16,11 +16,11 @@
         {{#each requests}}
         <tr>
           <td>{{this._id}}</td>
-          <td>{{this.requests.date}}</td>
-           <td>{{this.requests.amount}}</td>
-          <td>{{this.requests.status}}</td>
+          <td>{{this.date}}</td>
+           <td>{{this.amt}}</td>
+          <td>{{this.status}}</td>
         {{!-- /{{this._id}}/"{{this.requests.date}}"/{{this.requests.amount}} --}}
-          <td><a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/viewPayment/{{this._id}}/{{this.requests.date}}/{{this.requests.amount}}" class="btn btn-primary">View</a>
+          <td><a href="/adminPanel/VidhyA789/viewPayment/{{this._id}}/{{this.reqid}}/{{this.amt}}" class="btn btn-primary">View</a>
           <!-- send the value use query-->
         </tr>
         {{/each}}

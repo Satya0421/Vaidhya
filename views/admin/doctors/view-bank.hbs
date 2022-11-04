@@ -1,0 +1,29 @@
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">Doctors Bank Information</h2>
+            <form action"/adminPanel/VidhyA789/view-doctor/{{this._id}}" method="post">
+                <label for="id">Id</label>
+                <input type="text" name="id" class="form-control" value="{{doctors._id}} ">
+
+                <label for="accName">accName</label>
+                <input type="text" name="accName" class="form-control" value="{{doctors.accName}}">
+                <label for="accNo">Account Number</label>
+                <input type="text" name="accNo" class="form-control" value="{{doctors.accNo}}">
+                <label for="ifsc">IFSC</label>
+                <input type="text" name="ifsc" class="form-control" value="{{doctors.ifsc}}">
+
+                {{!-- <label for="location">location</label>
+                <input type="text" name="location" class="form-control" value="{{doctors.location.coordinates}}"> --}}
+                {{!-- <label for="lvl">lvl</label>
+                <input type="text" name="lvl" class="form-control" value="{{doctors.lvl}}"> --}}
+                {{!-- <label for="tabelNumber">tableNumber</label>
+                <br>
+                <input type="text" name="status" class="form-control" value="{{doctors.booking_table}}"> --}}
+                <br>
+                {{!-- <button type="submit" class="btn btn-primary ">update</button> --}}
+            </form>
+        </div>
+
+    </div>
+</div>

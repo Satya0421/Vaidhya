@@ -1,0 +1,37 @@
+<section>
+  <div class="container">
+    <h3>{{this.status}}Doctors</h3>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Username</th>
+          <th scope="col">name</th>
+          <th scope="col">phone</th>
+          <th scope="col">specality</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each doctors}}
+        <tr>
+          <td>{{this._id}}</td>
+          <td>{{this.name}}</td>
+          <td>{{this.username}}</td>
+          <td>{{this.phone}}</td>
+          <td>{{this.specality}}</td><br>
+          <td><a href="/adminPanel/VidhyA789/view-doctor/{{this._id}} "
+              class="btn btn-primary">View</a>
+            <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  $(function () {
+    $('#churchTable').DataTable();
+  });
+</script>

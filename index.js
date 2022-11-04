@@ -2,7 +2,7 @@ const express = require("express");
 const session = require('express-session')
 var body_parser=require('body-parser');
 const cron = require("node-cron");
-// var fs=require('fs');
+ var fs=require('fs');
 var cookieParser = require('cookie-parser');
 var path = require('path');
 var hbs=require('express-handlebars');
@@ -31,16 +31,16 @@ app.engine('hbs',hbs.engine({extname:'hbs',defaultLayout:'layout',layoutsDir:__d
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'hbs');
 // app.engine('hbs',hbs({extname:'hbs',defaultLayout:'layout', layoutsDir:__dirname+'/views/layout/',partialsDir:__dirname+'/views/partials'}))
-// app.use(body_parser.urlencoded({extended:false}));
-// app.use(cookieParser());
-// app.use(session({secret:"Aikara", resave: false,saveUninitialized: true,cookie:{maxAge: 90000000}}));
-// app.use(fileUpload({ safeFileNames: true, preserveExtension: true })); 
+app.use(body_parser.urlencoded({extended:false}));
+app.use(cookieParser());
+app.use(session({secret:"Aikara", resave: false,saveUninitialized: true,cookie:{maxAge: 90000000}}));
+app.use(fileUpload({ safeFileNames: true, preserveExtension: true })); 
 
 app.use("/uploads", express.static("uploads"));
 const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
 const adminRoute = require("./routes/admin");
-app.use("/admin/VidhyA", adminRoute);
+app.use("/adminPanel/VidhyA789/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
 
@@ -48,8 +48,8 @@ app.use("/doctors", doctorRoute);
 
  app.route("/").get((req, res) => 
  res.render("pilasa"));
-// app.route("/termsAndConditions").get((req, res) => 
-// res.render("terms"));
+ app.route("/termsAndConditions").get((req, res) => 
+ res.render("terms"));
 // cron.schedule("*/25 * * * * *", async function() {
 //   var dates="25-05-2022";
 //   console.log(dates);
@@ -76,9 +76,11 @@ app.use("/doctors", doctorRoute);
   //  })
 //  });
   // });
-  // cron.schedule("*/25 * * * * *",   () => {
-  //   var dates="25-05-2022";
-  //   console.log(dates);
+  // cron.schedule("*/10 * * * * *",   () => {
+  //  var date= new Date();
+  //  var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()-1).toString().padStart(2, '0')+'-'+date.getFullYear();
+  //  var time=date.getHours().toString().padStart(2, '0')+(date.getMinutes()-1).toString().padStart(2, '0');
+  //   console.log(time);
   //    var result=   db.get().collection(collection.BOOKINGS).find().forEach(i => {
   //          db.get().collection(collection.BOOKINGS).updateMany(
   //           {
@@ -91,6 +93,26 @@ app.use("/doctors", doctorRoute);
   //         )});
   // console.log(result)
   //   } )
+  // cron.schedule("*/10 * * * * *",   () => {
+  //   var date = new Date();
+  //   var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
+  //   var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
+  //   console.log(dates);
+  //   var result =
+  //       db.get().collection(collection.BOOKINGS).find().forEach(i => {
+  //           db.get().collection(collection.BOOKINGS).updateOne(
+  //               {
+  //                   _id: ObjectID(i._id)
+  //               },
+  //               {
+  //                    $pull: { appointments: { date: dates },appointments:{time: {$lte : time}} }
+  //               },
+  //           )
+  //       })
+  // //  console.log(result)
+  //    } )
+
+
 
 app.use(function (req, res, next) {
   res.render("error");

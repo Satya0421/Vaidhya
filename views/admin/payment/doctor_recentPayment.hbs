@@ -1,0 +1,62 @@
+ <div class="container">
+    <h3 >{{this.status}}</h3>
+    <br>
+ </div>
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h6 class="text-center">Search</h6>
+            <form action"/adminPanel/VidhyA789/view-doctorRecentPayment" method="post">
+                <div class="form-group">
+                        <input type="text" class="form-control" name="_id" id="_id"  placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-primary float-right">search</button>
+            </form>
+        </div>
+    </div>
+</div>
+<section padding-left: 40px;>
+ <div>
+   <br>
+      
+       <br>
+          <h6 class="text">Account Number:</t> </t>{{result.accNo}}</h6>
+       <br>
+          <h6 class="text">Account Holder Name:</t> </t>{{result.accName}}</h6>
+       <br>
+           <h6 class="text">Ifsc:</t> </t>{{result.ifsc}} </h6>
+       <br>
+       <h6 class="text">Grand total:</t> </t>{{result.grandtotal}}</h6>
+       <br>
+         <h6 class="text">balance:</t> </t>{{result.balance}}</h6>
+     <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Requested Date</th>
+          <th scope="col">Amount</th>
+          <th scope="col">status</th>
+          <th scope="col">Payed Date</th>
+           <th scope="col">Transaction Id</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each result.requests}}
+        <tr>
+          <td>{{this.date}}</td>
+          <td>{{this.amount}}</td>
+           <td>{{this.status}}</td>
+          <td>{{this.payDate}}</td>
+            <td>{{this.trId}}</td>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+    $(function(){
+    $('#churchTable').DataTable();
+  });
+</script>
