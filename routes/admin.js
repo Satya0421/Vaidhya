@@ -21,7 +21,6 @@ router.get('/login', (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
-
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .findOne({ username: req.body.email }, async (err, user) => {
@@ -56,7 +55,7 @@ router.post('/login', async (req, res) => {
 })
 router.get('/reset-password', verifyLogin, async (req, res) => {
   // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
-  var num = "123"
+  // var num = "1234"
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .updateOne(
