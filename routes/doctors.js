@@ -10,7 +10,7 @@ const fileupload = require("express-fileupload");
 app.use(fileupload({ safeFileNames: true, preserveExtension: true }));
 require('dotenv').config();
 let middleware = require("../middleware");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { Collection } = require("mongodb");
 const cron = require("node-cron");
 const sharp = require("sharp");

@@ -7,7 +7,7 @@ const config = require("../jwtconfig");
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
 let middleware = require("../middleware");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const ObjectID = require("mongodb").ObjectID
 
 //// ***************Registration***************************///

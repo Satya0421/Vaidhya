@@ -2,7 +2,7 @@ const express = require("express");
 const session = require('express-session')
 var body_parser=require('body-parser');
 const cron = require("node-cron");
- var fs=require('fs');
+var fs=require('fs');
 var cookieParser = require('cookie-parser');
 var path = require('path');
 var hbs=require('express-handlebars');
@@ -31,6 +31,7 @@ app.engine('hbs',hbs.engine({extname:'hbs',defaultLayout:'layout',layoutsDir:__d
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'hbs');
 // app.engine('hbs',hbs({extname:'hbs',defaultLayout:'layout', layoutsDir:__dirname+'/views/layout/',partialsDir:__dirname+'/views/partials'}))
+app.set('trust proxy', 1);
 app.use(body_parser.urlencoded({extended:false}));
 app.use(cookieParser());
 app.use(session({secret:"Aikara", resave: false,saveUninitialized: true,cookie:{maxAge: 90000000}}));

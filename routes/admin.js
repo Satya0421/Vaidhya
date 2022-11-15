@@ -1,6 +1,6 @@
 const express = require("express");
 var fs = require('fs');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 var router = express.Router();
 var collection = require("../config/collections");
 var db = require("../config/connection");
