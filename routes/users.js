@@ -15,7 +15,7 @@ app.post('/register', async (req, res) => {
     await db.get()
         .collection(collection.USERS).findOne({ $or: [{ phone: req.body.phone }, { username: req.body.email }] }, async (err, result) => {
             if (err) {
-                console.log(err)
+                //console.log(err)
                 return res.status(500).json({ msg: "Error to process... Try once more" });
             }
             if (result) {
@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
         });
 })
 app.post("/verifyPhone", async (req, res) => {
-    console.log(req.body)
+    //console.log(req.body)
     await db.get()
         .collection(collection.USERS)
         .updateOne(
@@ -80,7 +80,7 @@ app.post("/verifyPhone", async (req, res) => {
 });
 app.post('/forget_password', async (req, res) => {
     // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
-    console.log(req.body)
+    //console.log(req.body)
     var num = 1234
     await db.get()
         .collection(collection.USERS)
@@ -113,7 +113,7 @@ app.post('/forget_password', async (req, res) => {
         )
 });
 app.post("/verifyforgetpassword", async (req, res) => {
-    console.log(req.body)
+    //console.log(req.body)
     await db.get()
         .collection(collection.USERS)
         .updateOne(
@@ -124,7 +124,7 @@ app.post("/verifyforgetpassword", async (req, res) => {
                     code: 0
                 },
             }, (err, result) => {
-                console.log(result)
+                //console.log(result)
                 if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
 
                 if (result.modifiedCount == 1) {
@@ -157,9 +157,9 @@ app.post('/reset-password', async (req, res) => {
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {
     // var date_ob = new Date().toString();
-    // console.log(date_ob.substring(11,15)+'-')
-    // console.log(date_ob.getMonth())
-    // console.log(date_ob.toDateString())
+    // //console.log(date_ob.substring(11,15)+'-')
+    // //console.log(date_ob.getMonth())
+    // //console.log(date_ob.toDateString())
     await db.get()
         .collection(collection.USERS)
         .findOne({ username: req.body.username }, async (err, user) => {
@@ -273,7 +273,7 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 //   });
 app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     var index = 0;
-    console.log(req.body)
+    //console.log(req.body)
     var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
         {
             $geoNear: {
@@ -314,7 +314,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     //  {
     //     if()
     //  }
-    console.log(result2)
+    //console.log(result2)
     res.json(result2);
 });
 
@@ -330,7 +330,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
         }
 
     ).then(async (result, err) => {
-        // /console.log(result)
+        // ///console.log(result)
         if (err)
             return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
@@ -351,7 +351,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                 },
                 { upsert: true }
             ).then(async (result, err) => {
-                console.log(result)
+                //console.log(result)
                 if (result.upsertedCount == 1 || result.modifiedCount == 1) {
                     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
                         {
@@ -368,7 +368,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                             }
                         }
                     ).then(async (result, err) => {
-                        console.log(result)
+                        //console.log(result)
                         if (result.modifiedCount == 1) {
                             await db.get()
                                 .collection(collection.DOCTORSPAYMENT)
@@ -425,7 +425,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
         }
 
     ).then(async (result, err) => {
-        // console.log(result)
+        // //console.log(result)
         if (err)
             return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
@@ -440,7 +440,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
                     "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
                 },
             ).then(async (result, err) => {
-                // console.log(result)
+                // //console.log(result)
                 if (result.modifiedCount == 1) {
                     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
                         {
@@ -554,7 +554,7 @@ app.post('/viewdoctorsAppointment', middleware.checkToken, async (req, res) => {
 
 });
 app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
-    console.log("hello")
+    //console.log("hello")
     var result = await db.get()
         .collection(collection.DOCTORS).aggregate([
             {
@@ -576,7 +576,7 @@ app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
 
 })
 app.post('/viewDrFees', middleware.checkToken, async (req, res) => {
-    console.log("hello")
+    //console.log("hello")
     var result = await db.get()
         .collection(collection.BOOKINGS).aggregate([
             {
@@ -620,7 +620,7 @@ app.get('/listofDepartment', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.LISTOFITEMS).find().sort({ 'departments': -1 }).project({ 'departments': 1, _id: 0 }).toArray())
 });
 app.get('/listofcities', async function (req, res) {
-    // console.log("hai")
+    // //console.log("hai")
     var result = await db.get().collection(collection.LISTOFITEMS).find().project({ cities: 1, _id: 0 }).toArray()
     res.json(result[0])
 });
@@ -629,7 +629,7 @@ app.get('/crone', async function (req, res) {
     var date = new Date();
     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
     var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
-    console.log(dates);
+    //console.log(dates);
     var result =
         db.get().collection(collection.BOOKINGS).find().forEach(i => {
             db.get().collection(collection.BOOKINGS).updateOne(
@@ -641,7 +641,7 @@ app.get('/crone', async function (req, res) {
                 },
             )
         })
-    console.log(result[0])
+    //console.log(result[0])
     res.json(result)
 });
 module.exports = app;

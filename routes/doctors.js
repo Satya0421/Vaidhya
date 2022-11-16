@@ -17,11 +17,11 @@ const sharp = require("sharp");
 const ObjectID = require("mongodb").ObjectID
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
-  console.log(req.body)
+  // //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS).findOne({ $or: [{ phone: req.body.phone }, { username: req.body.email }] }, async (err, result) => {
       if (err) {
-        console.log(err)
+        // //console.log(err)
         return res.status(500).json({ msg: "Error to process... Try once more" });
       }
       if (result) {
@@ -66,7 +66,7 @@ app.post('/register1', async (req, res) => {
     });
 })
 app.post("/verifyPhone", async (req, res) => {
-  console.log(req.body)
+  //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -88,7 +88,7 @@ app.post("/verifyPhone", async (req, res) => {
     );
 });
 app.post('/register2', async (req, res) => {
-  console.log(req.body)
+  //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -150,18 +150,18 @@ app.post('/register3', async (req, res) => {
 })
 
 app.patch("/upload_profile_image/:_id", async (req, res) => {
-
   let image = req.files.img
   image.mv('./uploads/DoctorsImage/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
 app.patch("/upload_DoctorsIdProof/:_id", async (req, res) => {
-  // console.log("hello")
+  // //console.log("hello")
   // let short = sharp(req.files).resize(200, 200).toBuffer(function (err, buf) {
   //   if (err) return err
   // })
-  // console.log(short.files)
+  // //console.log(short.files)
   let image = req.files.img
+  console.log(image)
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
@@ -177,7 +177,7 @@ app.patch("/upload_RegisterationCertificate/:_id", async (req, res) => {
 });
 app.post('/forget_password', async (req, res) => {
   // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
-  console.log(req.body)
+  //console.log(req.body)
   var num = 1234
   await db.get()
     .collection(collection.DOCTORS)
@@ -210,7 +210,7 @@ app.post('/forget_password', async (req, res) => {
     )
 });
 app.post("/verifyforgetpassword", async (req, res) => {
-  console.log(req.body)
+  //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -221,7 +221,7 @@ app.post("/verifyforgetpassword", async (req, res) => {
           code: 0
         },
       }, (err, result) => {
-        console.log(result)
+        //console.log(result)
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
 
         if (result.modifiedCount == 1) {
@@ -253,7 +253,7 @@ app.post('/reset-password', async (req, res) => {
 
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {
-  console.log(req.body)
+  //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS)
     .findOne({ username: req.body.username }, async (err, user) => {
@@ -263,7 +263,7 @@ app.post("/login", async (req, res) => {
             if (user.lvl == "5" && user.status == "active") {
 
               let token = await jwt.sign({ username: req.params.username, _id: user._id }, config.key);
-              console.log(token)
+              //console.log(token)
               res.json({
                 token: token,
                 msg: "sucess",
@@ -326,7 +326,7 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 });
 
 app.get('/dashboard', middleware.checkToken, async (req, res) => {
-  console.log("hello")
+  //console.log("hello")
   var result = await db.get()
     .collection(collection.DOCTORS).aggregate([
       {
@@ -385,7 +385,7 @@ app.post('/editdailyAppointment', middleware.checkToken, async (req, res) => {
       "arrayFilters": [{ "inds.time": req.body.time, "inds.treattype": req.body.treattype }]
     },
   ).then((result, err) => {
-    console.log(result)
+    //console.log(result)
     if (result.modifiedCount == 1) {
       return res.status(200).json({ msg: "Successfully updated" });
     }
@@ -431,7 +431,7 @@ app.post('/copydailyAppointments', middleware.checkToken, async (req, res) => {
         }
       },
     ]).toArray();
-  console.log(result2)
+  //console.log(result2)
   if (result2[0].appointments) {
     await db.get().collection(collection.BOOKINGS).updateOne({ _id: ObjectID(req.decoded._id) },
       {
@@ -496,7 +496,7 @@ app.get('/findalldailyAppointments', middleware.checkToken, async function (req,
 //// *************** appointmnets List***************************///
 
 app.post('/findallCommingAppointments', middleware.checkToken, async function (req, res) {
-  console.log(req.body)
+  //console.log(req.body)
   var result1 = await db.get().collection(req.body.date.substring(3)).aggregate([
     {
       $match: { _id: ObjectID(req.decoded._id) }
@@ -521,7 +521,7 @@ app.post('/findallCommingAppointments', middleware.checkToken, async function (r
       }
     },
   ]).sort({ 'appointments.time': -1 }).toArray()
-  console.log(result1)
+  //console.log(result1)
   var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
     {
       $match: { _id: ObjectID(req.decoded._id) }
@@ -610,7 +610,7 @@ app.post('/editAppointment', middleware.checkToken, async (req, res) => {
       "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
     },
   ).then((result, err) => {
-    console.log(result)
+    //console.log(result)
     if (result.modifiedCount == 1) {
       return res.status(200).json({ msg: "Successfully updated" });
     }
@@ -706,7 +706,7 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
       "arrayFilters": [{ "inds.date": req.body.date }]
     },
   ).then(async (result, err) => {
-    console.log(result.value)
+    //console.log(result.value)
     if (result.value.appointments.length > 0) {
       result.value.appointments.map(async (i) => {
         if (i.date == req.body.date)
@@ -719,7 +719,7 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
             },
           )
       })
-      console.log("hello")
+      //console.log("hello")
       await db.get()
         .collection(collection.DOCTORSPAYMENT)
         .updateOne({
@@ -746,7 +746,7 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
   })
 });
 app.post('/cancelAllUnBookedAppointmnets', middleware.checkToken, async (req, res) => {
-  console.log("hello2")
+  //console.log("hello2")
   await db.get().collection(collection.BOOKINGS).updateOne(
     {
       _id: ObjectID(req.decoded._id)
@@ -769,7 +769,7 @@ app.get('/listofDepartment', async function (req, res) {
 });
 
 app.get('/listofcities', async function (req, res) {
-  console.log("hai")
+  //console.log("hai")
   var result = await db.get().collection(collection.LISTOFITEMS).aggregate([
     {
       $unwind: '$cities'
@@ -790,7 +790,7 @@ app.get('/listofcities', async function (req, res) {
 
 //// ***************Consulting Fee***************************///
 app.post('/updateConsultingFee', middleware.checkToken, async (req, res) => {
-  console.log(req.body)
+  //console.log(req.body)
   await db.get().collection(collection.BOOKINGS).updateOne(
     { _id: ObjectID(req.decoded._id) },
     {
@@ -838,7 +838,7 @@ app.get('/findConsultingFee', middleware.checkToken, async (req, res) => {
   var result = await db.get().collection(collection.BOOKINGS).find(
     { _id: ObjectID(req.decoded._id) }).project({ _id: 0, doorStep: 1, inClinic: 1, onCall: 1, onVideo: 1 }).toArray()
   return res.status(200).json(result[0]);
-  // console.log(result)
+  // //console.log(result)
   //   if (result.modifiedCount == 1) {
   //     return res.status(200).json({ msg: "Suceessfull" });
   //   }
@@ -883,7 +883,7 @@ app.post('/updatePaymentaccount', middleware.checkToken, async (req, res) => {
 app.get('/totalpayments', middleware.checkToken, async function (req, res) {
   await db.get().collection(collection.DOCTORSPAYMENT).findOne({ _id: ObjectID(req.decoded._id) }).then((result) => {
     if (result) {
-      console.log(result)
+      //console.log(result)
       res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests.slice(-20) });
     }
   })
@@ -921,7 +921,7 @@ app.post('/requestPayment', middleware.checkToken, async (req, res) => {
         //       drid: req.decoded._id,
         //     }
         //   ).then((result, err) => {
-        //     console.log(result)
+        //     //console.log(result)
         //     if (result.acknowledged) {
 
               return res.status(200).json({ msg: "Created successful" });

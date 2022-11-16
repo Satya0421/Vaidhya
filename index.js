@@ -51,16 +51,7 @@ app.use("/doctors", doctorRoute);
  res.render("pilasa"));
  app.route("/termsAndConditions").get((req, res) => 
  res.render("terms"));
-// cron.schedule("*/25 * * * * *", async function() {
-//   var dates="25-05-2022";
-//   console.log(dates);
-//   await db.get().collection(collection.DOCTORSPAYMENT).findOne({ _id: ObjectID(req.decoded._id) }).then((result)=>{
-//     if(result)
-//     {
-//       console.log(result)
-//       // res.status(200).json({_id:result._id,balance:result.balance, grandtotal: result.grandtotal,requests: result.requests.slice(0,100) });
-//     }
-//    })
+
 
   // await db.get().collection(collection.BOOKINGS).find().forEach(i => {
   //   db.get().collection(collection.BOOKINGS).update(
@@ -77,41 +68,40 @@ app.use("/doctors", doctorRoute);
   //  })
 //  });
   // });
-  // cron.schedule("*/10 * * * * *",   () => {
-  //  var date= new Date();
-  //  var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()-1).toString().padStart(2, '0')+'-'+date.getFullYear();
-  //  var time=date.getHours().toString().padStart(2, '0')+(date.getMinutes()-1).toString().padStart(2, '0');
-  //   console.log(time);
-  //    var result=   db.get().collection(collection.BOOKINGS).find().forEach(i => {
-  //          db.get().collection(collection.BOOKINGS).updateMany(
-  //           {
-  //             _id: ObjectID(i._id)
-  //           },
-  //           {
-  //             $pull: { appointments: { date: dates } }
-  //           }
+  cron.schedule("50 23 * * *",   () => {
+   var date= new Date();
+   var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()-1).toString().padStart(2, '0')+'-'+date.getFullYear();
+    console.log(time);
+     var result=   db.get().collection(collection.BOOKINGS).find().forEach(i => {
+           db.get().collection(collection.BOOKINGS).updateMany(
+            {
+              _id: ObjectID(i._id)
+            },
+            {
+              $pull: { appointments: { date: dates } }
+            }
         
-  //         )});
+          )});
   // console.log(result)
-  //   } )
-  // cron.schedule("*/10 * * * * *",   () => {
-  //   var date = new Date();
-  //   var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
-  //   var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
-  //   console.log(dates);
-  //   var result =
-  //       db.get().collection(collection.BOOKINGS).find().forEach(i => {
-  //           db.get().collection(collection.BOOKINGS).updateOne(
-  //               {
-  //                   _id: ObjectID(i._id)
-  //               },
-  //               {
-  //                    $pull: { appointments: { date: dates },appointments:{time: {$lte : time}} }
-  //               },
-  //           )
-  //       })
-  // //  console.log(result)
-  //    } )
+  } );
+  cron.schedule("0 0 */1 * * *",   () => {
+    var date = new Date();
+    var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
+    var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
+    console.log(dates);
+    var result =
+        db.get().collection(collection.BOOKINGS).find().forEach(i => {
+            db.get().collection(collection.BOOKINGS).updateOne(
+                {
+                    _id: ObjectID(i._id)
+                },
+                {
+                     $pull: { appointments: { date: dates },appointments:{time: {$lte : time}} }
+                },
+            )
+        })
+  //  console.log(result)
+     } )
 
 
 

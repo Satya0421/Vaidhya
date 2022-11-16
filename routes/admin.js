@@ -103,7 +103,7 @@ router.post('/reset-password', verifyLogin, async (req, res) => {
                     code: null
                   },
                 }, (err, result) => {
-                  console.log(result)
+                  //console.log(result)
                   if (err) return res.send(err);
                   if (result.modifiedCount == 1) {
                     res.redirect("/adminPanel/VidhyA789/login");
@@ -138,7 +138,7 @@ router.get('/', verifyLogin, async (req, res) => {
 })
 
 router.post('/Add-superImage', verifyLogin, async function (req, res, next) {
-  // console.log(req.files)
+  // //console.log(req.files)
   if (req.files != null) {
     if (req.files.Image) {
       let image = req.files.Image
@@ -169,7 +169,7 @@ router.get('/delete-superImage/:_id/:imgName', verifyLogin, async function (req,
       _id: ObjectID(req.params._id)
     })
     .then((result) => {
-      console.log(result)
+      //console.log(result)
       if (result.deletedCount == 1) {
         res.redirect("/adminPanel/VidhyA789/");
         // fs.unlinkSync('./uploads/superImage/' + req.params.imgName);
@@ -221,7 +221,7 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
         status: "active"
       }
     }).then(async (result) => {
-      // console.log(result.value)
+      // //console.log(result.value)
       var doctors = await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.params._id) })
       if (doctors == null) {
         await db.get().collection(collection.BOOKINGS).insertOne({
@@ -300,7 +300,7 @@ router.get('/view-activePayment', verifyLogin, async function (req, res, next) {
       }
     }]
   ).toArray();
-  // console.log(requests);
+  // //console.log(requests);
   res.render('admin/payment/view-activePayment', { login: true, requests, status })
 
 });
@@ -366,7 +366,7 @@ router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
     res.redirect('back');
   }
   else{
-    console.log(req.body)
+    //console.log(req.body)
   let requests = await db.get().collection(collection.DOCTORSPAYMENT).updateOne(
     {
       _id: ObjectID(req.params._id)
@@ -378,7 +378,7 @@ router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
       "arrayFilters": [{ "inds.amount": parseInt(req.body.amt), "inds.reqid": ObjectID(req.params.reqid) }]
     },
   ).then((result, err) => { 
-    console.log(result)
+    //console.log(result)
   })
   res.redirect('back');
   }
@@ -424,7 +424,7 @@ router.post('/user_bookings', verifyLogin, async function (req, res, next) {
   if(payments!=null){
      result = payments.appointments
   }
-  // console.log(result)
+  // //console.log(result)
   res.render('admin/users/user_bookings', { login: true, result, status })
   }
 });
@@ -434,7 +434,7 @@ router.get('/doctors_bookings', verifyLogin, async function (req, res, next) {
 
 });
 router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
-  console.log(req.body.month+"-"+req.body.year)
+  //console.log(req.body.month+"-"+req.body.year)
   if(req.body._id =="")
   {
     res.redirect('back');
@@ -447,7 +447,7 @@ router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
   if(bookings!=null){
      result = bookings.appointments
   }
-  console.log(result)
+  //console.log(result)
   res.render('admin/doctors/doctor_bookings', { login: true, result, status })
   }
 });
@@ -484,7 +484,7 @@ router.get('/addcities', verifyLogin, async function (req, res, next) {
   if(out[0].cities != "")
   {
    var result=out[0].cities;
-  // console.log(result)
+  // //console.log(result)
    res.render('admin/listdata/locationList', { login: true, status,result})
   }
   else
@@ -547,7 +547,7 @@ router.get('/addDepartment', verifyLogin, async function (req, res, next) {
   if(out[0].departments != "")
   {
    var result=out[0].departments;
-  // console.log(result)
+  // //console.log(result)
    res.render('admin/listdata/departmentList', { login: true, status,result})
   }
   else
@@ -557,7 +557,7 @@ router.get('/addDepartment', verifyLogin, async function (req, res, next) {
   
 });
 router.post('/addDepartment', verifyLogin, async (req, res) => {
-console.log(req.body.department)
+//console.log(req.body.department)
 if( req.body.department=='')
 {
   res.redirect('back');
