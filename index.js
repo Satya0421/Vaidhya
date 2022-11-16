@@ -31,7 +31,7 @@ app.engine('hbs',hbs.engine({extname:'hbs',defaultLayout:'layout',layoutsDir:__d
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'hbs');
 // app.engine('hbs',hbs({extname:'hbs',defaultLayout:'layout', layoutsDir:__dirname+'/views/layout/',partialsDir:__dirname+'/views/partials'}))
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 app.use(body_parser.urlencoded({extended:false}));
 app.use(cookieParser());
 app.use(session({secret:"Aikara", resave: false,saveUninitialized: true,cookie:{maxAge: 90000000}}));
@@ -44,7 +44,8 @@ const adminRoute = require("./routes/admin");
 app.use("/adminPanel/VidhyA789/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
-
+const fileUploadRoute = require("./routes/fileUpload");
+app.use("/fileUpload", fileUploadRoute);
 
 
  app.route("/").get((req, res) => 

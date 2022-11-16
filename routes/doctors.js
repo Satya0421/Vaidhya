@@ -1,22 +1,26 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 var db = require('../config/connection');
 var collection = require("../config/collections")
 // const crypto = require('crypto');
 const config = require("../jwtconfig");
 const jwt = require("jsonwebtoken");
-const fileupload = require("express-fileupload");
-app.use(fileupload({ safeFileNames: true, preserveExtension: true }));
+// const fileupload = require("express-fileupload");
+// app.use(fileupload({ safeFileNames: true, preserveExtension: true }));
 require('dotenv').config();
 let middleware = require("../middleware");
 const bcrypt = require('bcryptjs');
 const { Collection } = require("mongodb");
 const cron = require("node-cron");
-const sharp = require("sharp");
+// const sharp = require("sharp");
+// const upload = multer({ dest: "uploads/" });
 const ObjectID = require("mongodb").ObjectID
-var bodyParser = require('body-parser')
-app.use(bodyParser.urlencoded({extended:false}));
+var body_parser=require('body-parser');
+app.use(body_parser.urlencoded({extended:false}));
+var multer  =   require('multer');
+  const upload = multer();
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
@@ -156,18 +160,13 @@ app.patch("/upload_profile_image/:_id", async (req, res) => {
   image.mv('./uploads/DoctorsImage/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
-app.patch("/upload_DoctorsIdProof/:_id", async (req, res) => {
-  // //console.log("hello")
-  // let short = sharp(req.files).resize(200, 200).toBuffer(function (err, buf) {
-  //   if (err) return err
-  // })
-  // //console.log(short.files)
+app.post("/upload_DoctorsIdProof/:_id", async (req, res) => {
   let image = req.files.img
-  console.log(image)
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
 app.patch("/upload_EducationCertificate/:_id", async (req, res) => {
+  console.log("hello")
   let image = req.files.img
   image.mv('./uploads/EducationCertificate/' + req.params._id + ".jpg")
   return res.status(200).json();
