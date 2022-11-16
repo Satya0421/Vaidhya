@@ -15,6 +15,8 @@ const { Collection } = require("mongodb");
 const cron = require("node-cron");
 const sharp = require("sharp");
 const ObjectID = require("mongodb").ObjectID
+var bodyParser = require('body-parser')
+app.use(body_parser.urlencoded({extended:false}));
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
