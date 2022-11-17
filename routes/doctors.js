@@ -348,6 +348,34 @@ app.get('/dashboard', middleware.checkToken, async (req, res) => {
   return res.json(result[0])
 
 })
+
+//// ***************Profile***************************///
+app.post('/updateProfile', async (req, res) => {
+  //console.log(req.body)
+  await db.get()
+    .collection(collection.DOCTORS)
+    .updateOne(
+      { _id: ObjectID(req.body._id) },
+      {
+        $set:
+        {
+          googlelocation: req.body.googlelocation,
+          experience: req.body.experience,
+          address: req.body.address,
+        }
+      }
+    )
+    .then((result, err) => {
+      if (result.modifiedCount == 1) {
+        return res.status(200).json({ msg: "Successfull" });
+      }
+      if (err)
+        res.status(500).json({ msg: "Error to process...Try once more" });
+    })
+    .catch(() => {
+      return res.status(500).json({ msg: "Error to process... Try once more" });
+    });
+})
 //// ***************Daily  appointmnets ***************************///
 app.post('/adddailyAppointment', middleware.checkToken, async function (req, res) {
   await db.get().collection(collection.DOCTORSDAILYSLOT).updateOne({ _id: ObjectID(req.decoded._id) },

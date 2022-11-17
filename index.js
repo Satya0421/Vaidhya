@@ -53,59 +53,65 @@ app.use("/fileUpload", fileUploadRoute);
  app.route("/termsAndConditions").get((req, res) => 
  res.render("terms"));
 
-
-  // await db.get().collection(collection.BOOKINGS).find().forEach(i => {
-  //   db.get().collection(collection.BOOKINGS).update(
-  //    {
-  //      _id: ObjectID(i._id)
-  //    },
-  //    {
-  //      $pull: { appointments: { date: dates } }
-  //    }
- 
-  //  ).then(async (result, err) => {
-  //    console.log(result)
-  //    res.json()
-  //  })
-//  });
-  // });
-  cron.schedule("50 23 * * *",   () => {
-   var date= new Date();
-   var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()-1).toString().padStart(2, '0')+'-'+date.getFullYear();
-    console.log(time);
-     var result=   db.get().collection(collection.BOOKINGS).find().forEach(i => {
-           db.get().collection(collection.BOOKINGS).updateMany(
-            {
-              _id: ObjectID(i._id)
-            },
-            {
-              $pull: { appointments: { date: dates } }
-            }
+//   app.get('/deleteDaily', async (req, res) => {
+//     var date= new Date();
+//    var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();
+//  console.log(dates)
+//    var result=   db.get().collection(collection.BOOKINGS).find().forEach(i => {
+//            db.get().collection(collection.BOOKINGS).updateMany(
+//             {
+//               _id: ObjectID(i._id)
+//             },
+//             {
+//               $pull: { appointments: { date: dates } }
+//             }
         
-          )});
-  // console.log(result)
+//           )});
+//           res.json();
+//   });
+// app.get('/deleteDaily', async (req, res) => {
+//   var date= new Date();
+//  var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();
+// console.log(dates)
+// db.get().collection(collection.BOOKINGS).updateMany(
+//   { },
+//   { $pull: { appointments:  { date: dates  }}},
+//   { multi: true }
+//   )
+//         res.json();
+// });
+// app.get('/hourlydelete', async (req, res) => {
+//     var date = new Date();
+//     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
+//     var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
+//       db.get().collection(collection.BOOKINGS).updateMany(
+//         { },
+//         { $pull: { appointments:  { date: dates, time: {$lte : time } }   } },
+//         { multi: true }
+//         ).then((result)=>{
+//          console.log(result)
+//         })
+// });
+  cron.schedule("50 20 * * *",   () => {
+    var date= new Date();
+    var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();
+   console.log(dates)
+   db.get().collection(collection.BOOKINGS).updateMany(
+     { },
+     { $pull: { appointments:  { date: dates  }}},
+     { multi: true }
+     )
   } );
-  cron.schedule("0 0 */1 * * *",   () => {
+   cron.schedule("0 0 */1 * * *",   () => {
     var date = new Date();
     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
     var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
-    console.log(dates);
-    var result =
-        db.get().collection(collection.BOOKINGS).find().forEach(i => {
-            db.get().collection(collection.BOOKINGS).updateOne(
-                {
-                    _id: ObjectID(i._id)
-                },
-                {
-                     $pull: { appointments: { date: dates },appointments:{time: {$lte : time}} }
-                },
-            )
-        })
-  //  console.log(result)
+      db.get().collection(collection.BOOKINGS).updateMany(
+        { },
+        { $pull: { appointments:  { date: dates, time: {$lte : time } }   } },
+        { multi: true }
+        )
      } )
-
-
-
 app.use(function (req, res, next) {
   res.render("error");
 });
