@@ -20,7 +20,7 @@ db.connect((err)=>{
   console.log("mongo connected")
 });
 app.use(express.json());
-
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.engine('hbs',hbs.engine({extname:'hbs',defaultLayout:'layout',layoutsDir:__dirname+'/views/layout/',partialDir:__dirname+'/views/partials/'}))
@@ -48,8 +48,10 @@ const fileUploadRoute = require("./routes/fileUpload");
 app.use("/fileUpload", fileUploadRoute);
 
 
- app.route("/").get((req, res) => 
- res.render("pilasa"));
+//  app.route("/").get((req, res) => 
+//  res.render("pilasa"));
+app.route("/").get((req, res) => 
+res.render("website"));
  app.route("/termsAndConditions").get((req, res) => 
  res.render("terms"));
 
