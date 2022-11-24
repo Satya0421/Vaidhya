@@ -408,7 +408,8 @@ h6, .h6 {
 }
 
 .display-4 {
-  font-size: 3.5rem;
+   font-size: 3.5rem; 
+  /* font-size: 3.5vw; */
   font-weight: 300;
   line-height: 1.2;
 }

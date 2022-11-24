@@ -44,8 +44,6 @@ const adminRoute = require("./routes/admin");
 app.use("/adminPanel/VidhyA789/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
-const fileUploadRoute = require("./routes/fileUpload");
-app.use("/fileUpload", fileUploadRoute);
 
 
 //  app.route("/").get((req, res) => 
@@ -94,26 +92,26 @@ res.render("website"));
 //          console.log(result)
 //         })
 // });
-  cron.schedule("50 20 * * *",   () => {
+  cron.schedule("50 18 * * *",   async () => {
     var date= new Date();
     var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();
-   console.log(dates)
-   db.get().collection(collection.BOOKINGS).updateMany(
+  //  console.log(dates)
+   await db.get().collection(collection.BOOKINGS).updateMany(
      { },
      { $pull: { appointments:  { date: dates  }}},
      { multi: true }
-     )
+     );
   } );
-   cron.schedule("0 0 */1 * * *",   () => {
+   cron.schedule("0 * * * *",   async () => {
     var date = new Date();
     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
     var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
-      db.get().collection(collection.BOOKINGS).updateMany(
+    await  db.get().collection(collection.BOOKINGS).updateMany(
         { },
         { $pull: { appointments:  { date: dates, time: {$lte : time } }   } },
         { multi: true }
-        )
-     } )
+        );
+     } );
 app.use(function (req, res, next) {
   res.render("error");
 });
