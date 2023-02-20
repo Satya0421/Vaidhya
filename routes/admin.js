@@ -206,9 +206,16 @@ router.get('/view-activeDoctors', verifyLogin, async function (req, res, next) {
 });
 
 router.get('/view-doctor/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
   let doctors = await db.get().collection(collection.DOCTORS).findOne({ _id: ObjectID(req.params._id) })
   //(church)
   res.render('admin/doctors/view-doctor', { login: true, doctors })
+  }
+else {
+  res.redirect('back');
+}
+
 });
 
 router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (req, res, next) {
@@ -229,9 +236,12 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
           department: result.value.specality,
           location: result.value.location,
           address: result.value.address,
-          name: result.value.name
+          name: result.value.name,
+          rating:0,
+          totalRating:0
         }).then(async (response) => {
           await db.get().collection(collection.DOCTORSPAYMENT).insertOne({ _id: ObjectID(req.params._id), balance: 0, grandtotal: 0 }).then(async (response) => {
+            await db.get().collection(collection.DOCTORSREVIEW).insertOne({ _id: ObjectID(req.params._id),}).then(async (response) => {
             await db.get().collection(collection.DOCTORSDAILYSLOT).insertOne({ _id: ObjectID(req.params._id) }).then(async (response) => {
 
               //           var mailOption = {
@@ -254,6 +264,7 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
 
           })
         })
+      })
       }
       else {
         res.redirect('back');

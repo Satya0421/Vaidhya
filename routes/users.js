@@ -69,9 +69,9 @@ app.post("/verifyPhone", async (req, res) => {
                 if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
 
                 if (result.modifiedCount == 1) {
-                     db.get().collection(collection.USERSAPPOINTMENT).insertOne({ _id: ObjectID(req.body._id) })
+                    db.get().collection(collection.USERSAPPOINTMENT).insertOne({ _id: ObjectID(req.body._id) })
                     return res.status(200).json({ msg: "Suceessfully verified" });
-                   
+
                 } else {
                     return res.status(500).json({ msg: "code not match" });
                 }
@@ -204,7 +204,7 @@ app.get('/dashboard', middleware.checkToken, async (req, res) => {
 app.get('/getbanners', middleware.checkToken, async (req, res) => {
     let superImage = await db.get().collection(collection.BANNERCOLLECTION).find().project({ _id: 0 }).toArray();
     res.json(superImage)
-  })
+})
 app.post('/change-password', middleware.checkToken, async (req, res) => {
     await db.get()
         .collection(collection.USERS)
@@ -363,7 +363,8 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                                     patientname: req.body.patientname,
                                     treattype: req.body.treattype,
                                     doctorname: req.body.doctorsName,
-                                    status: "active"
+                                    status: "active",
+                                    rating: 0
                                 },
                             }
                         }
@@ -403,19 +404,19 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
 });
 
 app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
-    var fees=0;
- var result=   await db.get().collection(req.body.date.substring(3)).aggregate([
+    var fees = 0;
+    var result = await db.get().collection(req.body.date.substring(3)).aggregate([
         {
-            $match: {_id: ObjectID(req.body.doctorid)},
+            $match: { _id: ObjectID(req.body.doctorid) },
         },
         {
             $unwind: '$appointments'
         },
         {
-            $match: { 'appointments.date': req.body.date,'appointments.time': req.body.time }
-        }, ]   
+            $match: { 'appointments.date': req.body.date, 'appointments.time': req.body.time }
+        },]
     ).toArray();
-    fees=result[0].appointments.fees;
+    fees = result[0].appointments.fees;
     await db.get().collection(collection.BOOKINGS).updateOne(
         {
             _id: ObjectID(req.body.doctorid)
@@ -485,6 +486,37 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
         }
     });
 });
+app.post('/review', middleware.checkToken, async (req, res) => {
+    await db.get().collection(collection.BOOKINGS).updateOne(
+        {
+            _id: ObjectID(req.body.doctorid)
+        },
+
+        { $inc: { rating: req.body.rating, totalRating: 5 } }
+
+    ).then(async (result, err) => {
+        if (req.body.comment != "") {
+            await db.get().collection(collection.DOCTORSREVIEW).updateOne(
+                {
+                    _id: ObjectID(req.body.doctorid)
+                },
+                {
+                    $push: { review: { name: req.body.name, comment: req.body.comment } }
+                }
+            ).then(async (result, err) => {
+
+                if (err)
+                    return res.status(500).json({ msg: "Error to process...Try once more" });
+                return res.status(200).json({ msg: "Review Submitted Successfully" })
+            }).catch(() => {
+                return res.status(500).json({ msg: "Error to process...Try once more" });
+            });
+        }
+        else {
+            return res.status(200).json({ msg: "Review Submitted Successfully" })
+        }
+    });
+});
 app.get('/viewBookings', middleware.checkToken, async (req, res) => {
     res.json(await db.get().collection(collection.USERSAPPOINTMENT)
         .aggregate([{
@@ -503,7 +535,8 @@ app.get('/viewBookings', middleware.checkToken, async (req, res) => {
                 patientname: '$appointments.patientname',
                 treattype: '$appointments.treattype',
                 doctorname: '$appointments.doctorname',
-                status: '$appointments.status'
+                status: '$appointments.status',
+                rating: '$appointments.rating'
             }
         },
         {
@@ -625,23 +658,23 @@ app.get('/listofcities', async function (req, res) {
     res.json(result[0])
 });
 
-app.get('/crone', async function (req, res) {
-    var date = new Date();
-    var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
-    var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
-    //console.log(dates);
-    var result =
-        db.get().collection(collection.BOOKINGS).find().forEach(i => {
-            db.get().collection(collection.BOOKINGS).updateOne(
-                {
-                    _id: ObjectID(i._id)
-                },
-                {
-                    $pull: { appointments: { date: dates }, appointments: { time: { $lte: time } } }
-                },
-            )
-        })
-    //console.log(result[0])
-    res.json(result)
-});
+// app.get('/crone', async function (req, res) {
+//     var date = new Date();
+//     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
+//     var time = date.getHours().toString().padStart(2, '0') + (date.getMinutes() + 1).toString().padStart(2, '0');
+//     //console.log(dates);
+//     var result =
+//         db.get().collection(collection.BOOKINGS).find().forEach(i => {
+//             db.get().collection(collection.BOOKINGS).updateOne(
+//                 {
+//                     _id: ObjectID(i._id)
+//                 },
+//                 {
+//                     $pull: { appointments: { date: dates }, appointments: { time: { $lte: time } } }
+//                 },
+//             )
+//         })
+//     //console.log(result[0])
+//     res.json(result)
+// });
 module.exports = app;

@@ -161,12 +161,13 @@ app.patch("/upload_profile_image/:_id", async (req, res) => {
   return res.status(200).json();
 });
 app.post("/upload_DoctorsIdProof/:_id", async (req, res) => {
+  
   let image = req.files.img
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
 app.patch("/upload_EducationCertificate/:_id", async (req, res) => {
-  console.log("hello")
+ 
   let image = req.files.img
   image.mv('./uploads/EducationCertificate/' + req.params._id + ".jpg")
   return res.status(200).json();

@@ -5,6 +5,7 @@ module.exports={
     USERSAPPOINTMENT:'usersAppointment',
     LISTOFITEMS:'listofItems',
     DOCTORSPAYMENT:'doctorspayment',
+    DOCTORSREVIEW:'doctorsreview',
     WITHDRAWPAYMENT:'withdraw_payment',
     DOCTORSDAILYSLOT:'doctorsdailySlot',
     BANNERCOLLECTION:'banner_collection',
