@@ -487,35 +487,45 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
     });
 });
 app.post('/review', middleware.checkToken, async (req, res) => {
-    await db.get().collection(collection.BOOKINGS).updateOne(
+    await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
-            _id: ObjectID(req.body.doctorid)
+            $set: { "appointments.$[inds].rating": req.body.rating }
         },
-
-        { $inc: { rating: req.body.rating, totalRating: 5 } }
-
+        {
+            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+        },
     ).then(async (result, err) => {
-        if (req.body.comment != "") {
-            await db.get().collection(collection.DOCTORSREVIEW).updateOne(
-                {
-                    _id: ObjectID(req.body.doctorid)
-                },
-                {
-                    $push: { review: { name: req.body.name, comment: req.body.comment } }
-                }
-            ).then(async (result, err) => {
+        
+        await db.get().collection(collection.BOOKINGS).updateOne(
+            {
+                _id: ObjectID(req.body.doctorid)
+            },
 
-                if (err)
+            { $inc: { rating: req.body.rating, totalRating: 5 } }
+
+        ).then(async (result, err) => {
+            if (req.body.comment != "") {
+                await db.get().collection(collection.DOCTORSREVIEW).updateOne(
+                    {
+                        _id: ObjectID(req.body.doctorid)
+                    },
+                    {
+                        $push: { review: { name: req.body.name, comment: req.body.comment } }
+                    }
+                ).then(async (result, err) => {
+
+                    if (err)
+                        return res.status(500).json({ msg: "Error to process...Try once more" });
+                    return res.status(200).json({ msg: "Review Submitted Successfully" })
+                }).catch(() => {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
+                });
+            }
+            else {
                 return res.status(200).json({ msg: "Review Submitted Successfully" })
-            }).catch(() => {
-                return res.status(500).json({ msg: "Error to process...Try once more" });
-            });
-        }
-        else {
-            return res.status(200).json({ msg: "Review Submitted Successfully" })
-        }
-    });
+            }
+        });
+    })
 });
 app.get('/viewBookings', middleware.checkToken, async (req, res) => {
     res.json(await db.get().collection(collection.USERSAPPOINTMENT)
