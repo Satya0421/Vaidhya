@@ -536,7 +536,8 @@ app.get('/viewBookings', middleware.checkToken, async (req, res) => {
                 treattype: '$appointments.treattype',
                 doctorname: '$appointments.doctorname',
                 status: '$appointments.status',
-                rating: '$appointments.rating'
+                rating: '$appointments.rating',
+                summary: '$appointments.summary',
             }
         },
         {
