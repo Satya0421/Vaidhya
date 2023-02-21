@@ -613,7 +613,8 @@ app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
                     googlelocation: '$googlelocation',
                     address: '$address',
                     // location: '$location',
-                    experience: '$experience'
+                    experience: '$experience',
+                    regNumber: '$regNumber'
                 }
             }]).toArray();
     return res.json({ result: result[0] })
