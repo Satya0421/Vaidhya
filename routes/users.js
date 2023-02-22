@@ -186,6 +186,7 @@ app.post("/login", async (req, res) => {
         });
 });
 app.get('/dashboard', middleware.checkToken, async (req, res) => {
+    // console.log("hello")
     var result = await db.get()
         .collection(collection.USERS).aggregate([
             {
@@ -272,17 +273,16 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 //         //   project({ churchName: 1, place: 1 }).limit(10).toArray()
 //   });
 app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
-    var index = 0;
-    //console.log(req.body)
+    // var index = 0;
     var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
-        {
+        {    
             $geoNear: {
-                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
-                distanceField: "dist.calculated",
-                minDistance: 2,
-                // maxDistance:10,
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lng,req.body.lat] },
+                distanceField: "distance",
+                 maxDistance: 5000,
                 // query: { category: "Parks" },
-                includeLocs: "dist.location",
+                // includeLocs: "dist.location",
                 spherical: true
             }
         },
@@ -299,6 +299,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                 address: "$address",
                 name: "$name",
                 appointments: { $slice: ["$appointments", 1] },
+                rating: { $divide: [ "$rating", "$totalRating" ] },
             }
         },
 
@@ -317,7 +318,17 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     //console.log(result2)
     res.json(result2);
 });
-
+app.post('/displayReviews', middleware.checkToken, async function (req, res, next) {
+    var response=await db.get().collection(collection.DOCTORSREVIEW).aggregate(
+      [
+        {
+          $match: { _id: ObjectID(req.body.drid) }
+        },
+     { $project: { review: { $slice: [ "$review", -75] },_id:0 } }
+  ]).toArray()
+  
+  res.status(200).json(response[0]["review"])
+  });
 
 //// ***************Appointment***************************///
 app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
@@ -345,7 +356,8 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                             treattype: req.body.treattype,
                             fees: req.body.fee,
                             status: "active",
-                            phone: req.body.phone
+                            phone: req.body.phone,
+                            summary:false
                         },
                     }
                 },
@@ -642,7 +654,6 @@ app.post('/viewDrFees', middleware.checkToken, async (req, res) => {
 app.post('/viewdoctors', middleware.checkToken, async (req, res) => {
     res.json(await db.get().collection(collection.BOOKINGS)
         .aggregate([
-
             { $addFields: { firstElem: { $first: "$appointments" } } },
 
             {

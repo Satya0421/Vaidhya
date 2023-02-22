@@ -327,12 +327,47 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 
 });
 
+// app.get('/dashboard', middleware.checkToken, async (req, res) => {
+//   //console.log("hello")
+//   var result = await db.get()
+//     .collection(collection.DOCTORS).aggregate([
+//       {
+//         $match: { _id: ObjectID(req.decoded._id) }
+//       },
+//       {
+//         $project: {
+//           _id: '$_id',
+//           name: '$name',
+//           qualifications: '$qualifications',
+//           specality: '$specality',
+//           // googlelocation: '$googlelocation',
+//           address: '$address',
+//           location: '$location',
+//           experience: '$experience',
+//           referid: '$referId',
+//           subEnddate: '$subEnddate'
+//         }
+//       }]).toArray();
+//   return res.json(result[0])
+
+// })
+
 app.get('/dashboard', middleware.checkToken, async (req, res) => {
-  //console.log("hello")
-  var result = await db.get()
-    .collection(collection.DOCTORS).aggregate([
+  res.json({
+    data: await db.get().collection(collection.DOCTORS).aggregate([
       {
         $match: { _id: ObjectID(req.decoded._id) }
+      },
+      {
+        $lookup: {
+          from: collection.BOOKINGS,
+          localField: '_id',
+          foreignField: '_id',
+          as: 'booking'
+        }
+      },
+      {
+        $unwind: '$booking'
       },
       {
         $project: {
@@ -340,16 +375,20 @@ app.get('/dashboard', middleware.checkToken, async (req, res) => {
           name: '$name',
           qualifications: '$qualifications',
           specality: '$specality',
-          googlelocation: '$googlelocation',
+          // googlelocation: '$googlelocation',
           address: '$address',
-          // location: '$location',
-          experience: '$experience'
+          location: '$location',
+          experience: '$experience',
+          referid: '$referId',
+          regNumber: '$regNumber',
+          subEnddate: '$subEnddate',
+          rating: '$booking.rating',
+          totalRating: '$booking.totalRating',
         }
-      }]).toArray();
-  return res.json(result[0])
-
-})
-
+      },
+    ]).toArray()
+  })
+});
 //// ***************Profile***************************///
 app.post('/updateProfile', async (req, res) => {
   //console.log(req.body)
@@ -360,7 +399,7 @@ app.post('/updateProfile', async (req, res) => {
       {
         $set:
         {
-          googlelocation: req.body.googlelocation,
+         
           experience: req.body.experience,
           address: req.body.address,
         }
@@ -377,6 +416,18 @@ app.post('/updateProfile', async (req, res) => {
       return res.status(500).json({ msg: "Error to process... Try once more" });
     });
 })
+
+app.get('/displayReviews', middleware.checkToken, async function (req, res, next) {
+  // res.json( await db.get().collection(collection.DOCTORSREVIEW).findOne({_id: ObjectID(req.decoded._id)}, {review: {$slice: -2}}))
+  var response=await db.get().collection(collection.DOCTORSREVIEW).aggregate(
+    [
+      {
+        $match: { _id: ObjectID(req.decoded._id) }
+      },
+   { $project: { review: { $slice: [ "$review", -75] },_id:0 } }
+]).toArray()
+res.status(200).json(response[0]["review"])
+});
 //// ***************Daily  appointmnets ***************************///
 app.post('/adddailyAppointment', middleware.checkToken, async function (req, res) {
   await db.get().collection(collection.DOCTORSDAILYSLOT).updateOne({ _id: ObjectID(req.decoded._id) },
@@ -548,6 +599,7 @@ app.post('/findallCommingAppointments', middleware.checkToken, async function (r
         phone: '$appointments.phone',
         fees: '$appointments.fees',
         status: '$appointments.status',
+        summary:'$appointments.summary'
       }
     },
   ]).sort({ 'appointments.time': -1 }).toArray()
@@ -597,6 +649,7 @@ app.post('/findallpastAppointments', middleware.checkToken, async function (req,
         patientid: '$appointments.patientid',
         fees: '$appointments.fees',
         status: '$appointments.status',
+        summary:'$appointments.summary'
       }
     },
   ]).sort({ 'appointments.time': -1 }).toArray())
@@ -653,6 +706,7 @@ app.post('/editAppointment', middleware.checkToken, async (req, res) => {
   });
 }
 );
+
 app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
   await db.get().collection(collection.BOOKINGS).updateOne(
     {
@@ -793,6 +847,69 @@ app.post('/cancelAllUnBookedAppointmnets', middleware.checkToken, async (req, re
     }
   })
 });
+
+//// ***************Summary***************************///
+app.post('/addSummary', middleware.checkToken, async (req, res) => {
+  await db.get().collection(collection.USERSAPPOINTMENT).updateOne(
+    {
+      _id: ObjectID(req.body.patientid)
+    },
+    {
+      $set: { 'appointments.$[inds].summary': req.body.summary }
+    },
+    {
+      "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+    },
+  ).then((result, err) => {
+    //console.log(result)
+    if (result.modifiedCount == 1) {
+      db.get().collection(req.body.date.substring(3)).updateOne(
+        {
+          _id: ObjectID(req.decoded._id)
+        },
+        {
+          $set: { 'appointments.$[inds].summary': true }
+        },
+        {
+          "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+        },
+      )
+      return res.status(200).json({ msg: "Successfully updated" });
+    }
+    else {
+      return res.status(500).json({ msg: "Error to process...Try once more" });
+    }
+
+  }).catch(() => {
+    return res.status(500).json({ msg: "Error to process...Try once more" });
+  });
+}
+);
+
+app.post('/displaySummary', middleware.checkToken, async (req, res) => {
+  var result1 = await db.get().collection(collection.USERSAPPOINTMENT).aggregate([
+    {
+      $match: { _id: ObjectID(req.body.patientid) }
+    },
+    {
+      $unwind: '$appointments'
+    },
+    {
+      $match: { 'appointments.date': req.body.date,'appointments.time': req.body.time }
+    },
+    {
+      $project: {
+        _id: 0,
+        summary: '$appointments.summary',
+      
+      }
+    },
+  ]).toArray()
+  res.json(result1[0])
+}
+);
+
+
 //// ***************Data List***************************///
 app.get('/listofDepartment', async function (req, res) {
   res.json(await db.get().collection(collection.LISTOFITEMS).find().sort({ 'departments': -1 }).project({ 'departments': 1, _id: 0 }).toArray())
