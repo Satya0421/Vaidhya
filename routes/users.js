@@ -376,6 +376,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                                     treattype: req.body.treattype,
                                     doctorname: req.body.doctorsName,
                                     status: "active",
+                                    summary:"",
                                     rating: 0
                                 },
                             }
@@ -434,7 +435,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
             _id: ObjectID(req.body.doctorid)
         },
         {
-            $push: { appointments: { time: req.body.time, date: req.body.date } }
+            $push: { appointments: { time: req.body.time, date: req.body.date, } }
         }
 
     ).then(async (result, err) => {
@@ -460,7 +461,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
                             $set: { "appointments.$[inds].status": "cancelled" }
                         },
                         {
-                            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+                            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time, "inds.treattype":req.body.treattype}]
                         },
                     ).then(async (result, err) => {
                         if (result.modifiedCount == 1) {
