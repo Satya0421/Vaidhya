@@ -280,7 +280,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                 // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
                 near: { type: "Point", coordinates: [req.body.lng,req.body.lat] },
                 distanceField: "distance",
-                 maxDistance: 5000,
+                 maxDistance: 15000,
                 // query: { category: "Parks" },
                 // includeLocs: "dist.location",
                 spherical: true
