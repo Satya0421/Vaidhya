@@ -156,10 +156,6 @@ app.post('/reset-password', async (req, res) => {
 
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {
-    // var date_ob = new Date().toString();
-    // //console.log(date_ob.substring(11,15)+'-')
-    // //console.log(date_ob.getMonth())
-    // //console.log(date_ob.toDateString())
     await db.get()
         .collection(collection.USERS)
         .findOne({ username: req.body.username }, async (err, user) => {
@@ -303,7 +299,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
             }
         },
 
-    ]).limit(25).toArray()
+    ]).limit(50).toArray()
     //   var output=result2.filter(eachObj ,i => {
     //     if( eachObj.appointments.date==req.body.date)
     //     {
@@ -681,6 +677,14 @@ app.get('/listofcities', async function (req, res) {
     var result = await db.get().collection(collection.LISTOFITEMS).find().project({ cities: 1, _id: 0 }).toArray()
     res.json(result[0])
 });
+
+
+//// ***************List Data***************************///
+
+app.get('/hospitals', middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ hospitalName: 1, _id: 1,phone:1,address:1,image:1 }).toArray())
+});
+
 
 // app.get('/crone', async function (req, res) {
 //     var date = new Date();

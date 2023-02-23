@@ -22,22 +22,45 @@
   <!-- Back to top button -->
   <div class="back-to-top"></div>
 
-  <header>
-    <div class="page-footer2" style="height: 110px;padding: 0; ">
-      {{!-- <nav class="navbar navbar-expand-lg navbar-light shadow-sm"> --}}
-        <div class="container" style="margin: 0px; padding-left: 50px; padding-bottom: 20px;">
-          <a class="navbar-brand" href="#">
-            <img src="assets/img/logo.png" / height="90px">
-            {{!-- <span>
-              <h2 class="display-6" style="color: #10B801; ">Vidhya</h2>
-            </span> --}}
-            {{!-- <span style="color: #10B801; font-size: 30px; ">Vidhya</span></a> --}}
-          <span class="display-4" style="color: white;  font-size: 33px; font-weight: bold;">Vaidhya</span></a>
-        </div> <!-- .container -->
-        {{!--
-      </nav> --}}
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <img src="assets/img/logo.png" / height="90px">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent" style="padding-left: 70%;  ">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item dropdown">
+            <div class="dropdown">
+              <a class="btn  dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                Register
+              </a>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="/register/hospital">Hospital Register
+                </a>
+                <a class="dropdown-item" href="">Lab Register
+                </a>
+                 <a class="dropdown-item" href="">Pharmacy Register
+                </a>
+                 <a class="dropdown-item" href="">Home Nurse Register
+                </a>
+                <a class="dropdown-item" href="">Ambulance Register
+                </a>
+              </div>
+            </div>
+          </li>
+
+      </div>
     </div>
-  </header>
+  </nav>
   <div class="page-hero bg-image overlay-dark" style="background-image: url(assets/img/bg_image_1.jpg); ">
     {{!-- <div class="topbar"> --}}
       {{!-- <nav class="navbar">
@@ -88,8 +111,8 @@
             </div>
           </div>
           <div class="col-md-4 py-3 py-md-0" style="padding-top:  5px;">
-            <div class="card-service wow fadeInUp" >
-              <div class="circle-shape bg-secondary text-white" >
+            <div class="card-service wow fadeInUp">
+              <div class="circle-shape bg-secondary text-white">
                 <span class="mai-chatbubbles-outline"></span>
               </div>
               <p><span>Home </span> Nurse</p>
@@ -241,14 +264,14 @@
             <li><a href="#">About Us</a></li>
             <li><a href="#">Terms & Condition</a></li>
             <li><a href="#">Privacy</a></li>
-            
+
           </ul>
         </div>
-        
+
         <div class="col-sm-6 col-lg-4 py-3">
           <h5>Contact</h5>
-          <p class="footer-link mt-2">Techraven, jp Nagar<br> Bangalore,India <br> 560096 </p><br> 
-          <a href="#" class="footer-link">701-573-7582</a><br> 
+          <p class="footer-link mt-2">Techraven, jp Nagar<br> Bangalore,India <br> 560096 </p><br>
+          <a href="#" class="footer-link">701-573-7582</a><br>
           <a href="#" class="footer-link">vaidhya@temporary.net</a>
         </div>
 
@@ -268,21 +291,22 @@
 
       <div class="row">
         <div class="col-12 col-sm-6 col-md-6 col-lg-7" style="">
-        <div>
-          <p id="copyright">Copyright &copy; 2022 <a href="https://macodeid.com/" target="_blank">Vidhya</a>. All right
-            reserved</p>
-        </div>
+          <div>
+            <p id="copyright">Copyright &copy; 2022 <a href="https://macodeid.com/" target="_blank">Vidhya</a>. All
+              right
+              reserved</p>
           </div>
-        <div class="col-12 col-sm-6 col-md-4 offset-md-2 col-lg-3">
-               
-                <a href="https://www.techraven.live" target="_blank" style="color: white;  font-size: 17px; text-decoration: none;">Powered by :
-                  <img
-                  src="../assets/img/TRlogo.png" height="12px" />
-                </a>
-              
         </div>
+        <div class="col-12 col-sm-6 col-md-4 offset-md-2 col-lg-3">
+
+          <a href="https://www.techraven.live" target="_blank"
+            style="color: white;  font-size: 17px; text-decoration: none;">Powered by :
+            <img src="../assets/img/TRlogo.png" height="12px" />
+          </a>
 
         </div>
+
+      </div>
 
     </div>
   </footer>

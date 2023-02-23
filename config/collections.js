@@ -10,6 +10,7 @@ module.exports={
     DOCTORSDAILYSLOT:'doctorsdailySlot',
     BANNERCOLLECTION:'banner_collection',
     ADMIN_COLLECTION:'admin',
+    HOSPITAL_COLLECTION:'hospitals',
     // BELIVERS:'belivers',
     // BELIVERS_CART:'beliverCart',
    

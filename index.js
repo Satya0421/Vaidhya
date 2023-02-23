@@ -35,7 +35,8 @@ app.engine('hbs',hbs.engine({extname:'hbs',defaultLayout:'layout',layoutsDir:__d
 app.use(body_parser.urlencoded({extended:false}));
 app.use(cookieParser());
 app.use(session({secret:"Aikara", resave: false,saveUninitialized: true,cookie:{maxAge: 90000000}}));
-app.use(fileUpload({ safeFileNames: true, preserveExtension: true })); 
+ app.use(fileUpload({ safeFileNames: true, preserveExtension: true })); 
+
 
 app.use("/uploads", express.static("uploads"));
 const usersRoute = require("./routes/users");
@@ -44,6 +45,8 @@ const adminRoute = require("./routes/admin");
 app.use("/adminPanel/VidhyA789/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
+const websiteRoute = require("./routes/registration");
+app.use("/register", websiteRoute);
 
 
 //  app.route("/").get((req, res) => 
