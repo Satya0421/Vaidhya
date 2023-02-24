@@ -262,7 +262,7 @@ app.post("/login", async (req, res) => {
       if (user) {
         await bcrypt.compare(req.body.password, user.password).then(async (status) => {
           if (status) {
-            if (user.lvl == "5" && user.status == "active") {
+            if (user.lvl == "6" && user.status == "active") {
 
               let token = await jwt.sign({ username: req.params.username, _id: user._id }, config.key);
               //console.log(token)
@@ -274,7 +274,7 @@ app.post("/login", async (req, res) => {
               })
 
             }
-            else if (user.lvl == "4") {
+            else if (user.lvl == "5") {
               return res.status(403).json({ status: user.status, msg: " Your verification is under proccess , You can enjoy Vidhya Soon" });
             }
             else {
