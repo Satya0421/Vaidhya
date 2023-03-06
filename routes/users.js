@@ -271,12 +271,12 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     // var index = 0;
     var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
-        {    
+        {
             $geoNear: {
                 // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
-                near: { type: "Point", coordinates: [req.body.lng,req.body.lat] },
+                near: { type: "Point", coordinates: [req.body.lng, req.body.lat] },
                 distanceField: "distance",
-                 maxDistance: 15000,
+                maxDistance: 15000,
                 // query: { category: "Parks" },
                 // includeLocs: "dist.location",
                 spherical: true
@@ -295,7 +295,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                 address: "$address",
                 name: "$name",
                 appointments: { $slice: ["$appointments", 1] },
-                rating: { $divide: [ "$rating", "$totalRating" ] },
+                rating: { $divide: ["$rating", "$totalRating"] },
             }
         },
 
@@ -315,186 +315,138 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     res.json(result2);
 });
 app.post('/displayReviews', middleware.checkToken, async function (req, res, next) {
-    var response=await db.get().collection(collection.DOCTORSREVIEW).aggregate(
-      [
-        {
-          $match: { _id: ObjectID(req.body.drid) }
-        },
-     { $project: { review: { $slice: [ "$review", -75] },_id:0 } }
-  ]).toArray()
-  
-  res.status(200).json(response[0]["review"])
-  });
+    var response = await db.get().collection(collection.DOCTORSREVIEW).aggregate(
+        [
+            {
+                $match: { _id: ObjectID(req.body.drid) }
+            },
+            { $project: { review: { $slice: ["$review", -75] }, _id: 0 } }
+        ]).toArray()
+
+    res.status(200).json(response[0]["review"])
+});
 
 //// ***************Appointment***************************///
 app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
-    await db.get().collection(collection.BOOKINGS).updateOne(
+    await db.get().collection(req.body.date.substring(3)).updateOne({ _id: ObjectID(req.body.doctorid) },
         {
-            _id: ObjectID(req.body.doctorid)
+            $push: {
+                appointments: {
+                    date: req.body.date,
+                    time: req.body.time,
+                    patientid: ObjectID(req.decoded._id),
+                    patientname: req.body.patientname,
+                    treattype: req.body.treattype,
+                    fees: req.body.fee,
+                    status: "active",
+                    phone: req.body.phone,
+                    summary: false
+                },
+            }
         },
-        {
-            $pull: { appointments: { time: req.body.time, date: req.body.date } }
-        }
-
+        { upsert: true }
     ).then(async (result, err) => {
-        // ///console.log(result)
-        if (err)
-            return res.status(500).json({ msg: "Error to process...Try once more" });
-        if (result.modifiedCount == 1) {
-            await db.get().collection(req.body.date.substring(3)).updateOne({ _id: ObjectID(req.body.doctorid) },
+        //console.log(result)
+        if (result.upsertedCount == 1 || result.modifiedCount == 1) {
+            await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
                 {
                     $push: {
                         appointments: {
                             date: req.body.date,
                             time: req.body.time,
-                            patientid: ObjectID(req.decoded._id),
+                            doctorsid: ObjectID(req.body.doctorid),
                             patientname: req.body.patientname,
                             treattype: req.body.treattype,
-                            fees: req.body.fee,
+                            doctorname: req.body.doctorsName,
                             status: "active",
-                            phone: req.body.phone,
-                            summary:false
+                            summary: "",
+                            rating: 0
                         },
                     }
-                },
-                { upsert: true }
+                }
             ).then(async (result, err) => {
                 //console.log(result)
-                if (result.upsertedCount == 1 || result.modifiedCount == 1) {
-                    await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
-                        {
-                            $push: {
-                                appointments: {
-                                    date: req.body.date,
-                                    time: req.body.time,
-                                    doctorsid: ObjectID(req.body.doctorid),
-                                    patientname: req.body.patientname,
-                                    treattype: req.body.treattype,
-                                    doctorname: req.body.doctorsName,
-                                    status: "active",
-                                    summary:"",
-                                    rating: 0
-                                },
+                if (result.modifiedCount == 1) {
+                    await db.get()
+                        .collection(collection.BOOKINGS)
+                        .updateOne({
+                            _id: ObjectID(req.body.doctorid),
+                        },
+                            {
+                                $inc: { balance: req.body.fee },
+                                $pull: { appointments: { time: req.body.time, date: req.body.date } }
+                            },
+                        )
+                        .then((result) => {
+                            if (result.modifiedCount == 1) {
+                                return res.status(200).json({ msg: "Appointment successful" });
                             }
-                        }
-                    ).then(async (result, err) => {
-                        //console.log(result)
-                        if (result.modifiedCount == 1) {
-                            await db.get()
-                                .collection(collection.DOCTORSPAYMENT)
-                                .updateOne({
-                                    _id: ObjectID(req.body.doctorid),
-                                },
-                                    {
-                                        $inc: { balance: req.body.fee }
-                                    },
-                                )
-                                .then((result) => {
-                                    if (result.modifiedCount == 1) {
-                                        return res.status(200).json({ msg: "Appointment successful" });
-                                    }
-                                })
-                        } else
-                            return res.status(500).json({ msg: "Error to process...Try once more" });
-                    })
-                }
-                else
+                        })
+                } else
                     return res.status(500).json({ msg: "Error to process...Try once more" });
             })
-
-                .catch(() => {
-                    return res.status(500).json({ msg: "Error to process...Try once more" });
-                });
         }
-        else {
+        else
             return res.status(500).json({ msg: "Error to process...Try once more" });
-        }
-    });
-});
+    })
 
+        .catch(() => {
+            return res.status(500).json({ msg: "Error to process...Try once more" });
+        });
+
+});
 app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
     var fees = 0;
-    var result = await db.get().collection(req.body.date.substring(3)).aggregate([
+    var result = await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
         {
-            $match: { _id: ObjectID(req.body.doctorid) },
+            _id: ObjectID(req.body.doctorid), "appointments.date": req.body.date, "appointments.time": req.body.time,
         },
         {
-            $unwind: '$appointments'
+            $set: { "appointments.$[inds].status": "cancelled" }
         },
         {
-            $match: { 'appointments.date': req.body.date, 'appointments.time': req.body.time }
-        },]
-    ).toArray();
-    fees = result[0].appointments.fees;
-    await db.get().collection(collection.BOOKINGS).updateOne(
+            arrayFilters: [{ "inds.date": req.body.date, "inds.time": req.body.time, "inds.patientid": ObjectID(req.decoded._id) }],
+            projection: { "appointments.$": 1 }
+        },
+    );
+     fees = result.value.appointments[0].fees;
+    await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
-            _id: ObjectID(req.body.doctorid)
+            $set: { "appointments.$[inds].status": "cancelled" }
         },
         {
-            $push: { appointments: { time: req.body.time, date: req.body.date, treattype:req.body.treattype} }
-        }
-
+            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+        },
     ).then(async (result, err) => {
-        // //console.log(result)
-        if (err)
-            return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
-            await db.get().collection(req.body.date.substring(3)).updateOne(
+            await db.get().collection(collection.BOOKINGS).updateOne(
                 {
                     _id: ObjectID(req.body.doctorid)
                 },
                 {
-                    $set: { "appointments.$[inds].status": "cancelled" }
-                },
-                {
-                    "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
-                },
+                    $push: { appointments: { time: req.body.time, date: req.body.date, treattype: req.body.treattype } },
+                    $inc: { balance: - fees }
+                }
+
             ).then(async (result, err) => {
                 // //console.log(result)
+                if (err)
+                    return res.status(500).json({ msg: "Error to process...Try once more" });
                 if (result.modifiedCount == 1) {
-                    await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
-                        {
-                            $set: { "appointments.$[inds].status": "cancelled" }
-                        },
-                        {
-                            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time}]
-                        },
-                    ).then(async (result, err) => {
-                        if (result.modifiedCount == 1) {
-                            await db.get()
-                                .collection(collection.DOCTORSPAYMENT)
-                                .updateOne({
-                                    _id: ObjectID(req.body.doctorid),
-                                },
-                                    // {
-                                    //     $inc: { balance: - req.body.fee }
-                                    // },
-                                    {
-                                        $inc: { balance: - fees }
-                                    },
-                                )
-                                .then((result) => {
-                                    if (result.modifiedCount == 1) {
-                                        return res.status(200).json({ msg: "Appointment Cancelled successful" });
-                                    }
-                                })
-                        } else
-                            return res.status(500).json({ msg: "Error to process...Try once more" });
-                    })
-                }
-                else
-                    return res.status(500).json({ msg: "Error to process...Try once more" });
-            })
 
-                .catch(() => {
+                }
+                else {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
-                });
+                }
+            });
         }
-        else {
-            return res.status(500).json({ msg: "Error to process...Try once more" });
+        else
+        {
+            return res.status(500).json({ msg: "Error to process...Try once more" }); 
         }
     });
-});
+})
+
 app.post('/review', middleware.checkToken, async (req, res) => {
     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
@@ -504,13 +456,15 @@ app.post('/review', middleware.checkToken, async (req, res) => {
             "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
         },
     ).then(async (result, err) => {
-        
+
         await db.get().collection(collection.BOOKINGS).updateOne(
             {
                 _id: ObjectID(req.body.doctorid)
             },
 
-            { $inc: { rating: req.body.rating, totalRating: 5 } }
+            { $inc: { rating: req.body.rating, totalRating: 5 } 
+        
+        }
 
         ).then(async (result, err) => {
             if (req.body.comment != "") {
@@ -652,7 +606,6 @@ app.post('/viewdoctors', middleware.checkToken, async (req, res) => {
     res.json(await db.get().collection(collection.BOOKINGS)
         .aggregate([
             { $addFields: { firstElem: { $first: "$appointments" } } },
-
             {
                 $project:
                 {
@@ -682,7 +635,7 @@ app.get('/listofcities', async function (req, res) {
 //// ***************List Data***************************///
 
 app.get('/hospitals', middleware.checkToken, async function (req, res) {
-    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ hospitalName: 1, _id: 1,phone:1,address:1,image:1 }).toArray())
+    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ hospitalName: 1, _id: 1, phone: 1, address: 1, image: 1 }).toArray())
 });
 
 

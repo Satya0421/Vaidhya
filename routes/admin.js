@@ -224,7 +224,7 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
     {
       $set:
       {
-        lvl: "5",
+        lvl: "6",
         status: "active"
       }
     }).then(async (result) => {
@@ -238,9 +238,10 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
           address: result.value.address,
           name: result.value.name,
           rating:0,
-          totalRating:0
+          totalRating:0,
+          balance: 0, 
+          grandtotal: 0 
         }).then(async (response) => {
-          await db.get().collection(collection.DOCTORSPAYMENT).insertOne({ _id: ObjectID(req.params._id), balance: 0, grandtotal: 0 }).then(async (response) => {
             await db.get().collection(collection.DOCTORSREVIEW).insertOne({ _id: ObjectID(req.params._id),}).then(async (response) => {
             await db.get().collection(collection.DOCTORSDAILYSLOT).insertOne({ _id: ObjectID(req.params._id) }).then(async (response) => {
 
@@ -261,9 +262,7 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
               //           });
             });
             res.redirect('back');
-
           })
-        })
       })
       }
       else {
@@ -292,7 +291,7 @@ router.get('/view-InactiveUser', verifyLogin, async function (req, res, next) {
 
 router.get('/view-activePayment', verifyLogin, async function (req, res, next) {
   var status = "Active Payments "
-  let requests = await db.get().collection(collection.DOCTORSPAYMENT).aggregate([
+  let requests = await db.get().collection(collection.BOOKINGS).aggregate([
     // {
     //   $match: { _id: ObjectID(req.decoded._id) }
     // },
@@ -317,7 +316,7 @@ router.get('/view-activePayment', verifyLogin, async function (req, res, next) {
 });
 router.get('/viewPayment/:_id/:reqid/:amt', verifyLogin, async (req, res) => {
   
-  let requests = await db.get().collection(collection.DOCTORSPAYMENT).aggregate([
+  let requests = await db.get().collection(collection.BOOKINGS).aggregate([
     {
       $match: { _id: ObjectID(req.params._id) }
     },
@@ -335,40 +334,16 @@ router.get('/viewPayment/:_id/:reqid/:amt', verifyLogin, async (req, res) => {
         amt: '$requests.amount',
         payDate: '$requests.payDate',
         trId: '$requests.trId',
+        accName: '$accName',
+        accNo: '$accNo',
+        ifsc: '$ifsc',
+        doctorName: '$name'
       }
     }
   ]).toArray();
   var result = requests[0];
-  let out = await db.get().collection(collection.DOCTORSPAYMENT)
-    .aggregate([
-      {
-        $match: { _id: ObjectID(req.params._id) }
-      },
-      {
-        $lookup:
-        {
-          from: collection.DOCTORS,
-          localField: '_id',
-          foreignField: '_id',
-          as: "doctor"
-        }
-
-      },
-      {
-        $unwind: '$doctor'
-      },
-      {
-        $project: {
-          accName: '$accName',
-          accNo: '$accNo',
-          ifsc: '$ifsc',
-          doctorName: '$doctor.name',
-          doctorPhone: '$doctor.phone'
-        }
-      }
-    ]).toArray();
-  var doctor = out[0]
-  res.render('admin/payment/viewPayment', { login: true, result, doctor })
+  console.log(result)
+  res.render('admin/payment/viewPayment', { login: true, result })
 });
 router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
  
@@ -378,7 +353,7 @@ router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
   }
   else{
     //console.log(req.body)
-  let requests = await db.get().collection(collection.DOCTORSPAYMENT).updateOne(
+  let requests = await db.get().collection(collection.BOOKINGS).updateOne(
     {
       _id: ObjectID(req.params._id)
     },
@@ -408,7 +383,7 @@ router.post('/view-doctorRecentPayment', verifyLogin, async function (req, res, 
   }
   else
   {
-  let payments = await db.get().collection(collection.DOCTORSPAYMENT).findOne({ _id: ObjectID(req.body._id) })
+  let payments = await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.body._id) })
   let result = payments
   res.render('admin/payment/doctor_recentPayment', { login: true, result, status })
   }
@@ -431,7 +406,6 @@ router.post('/user_bookings', verifyLogin, async function (req, res, next) {
   {
   let payments = await db.get().collection(collection.USERSAPPOINTMENT).findOne({ _id: ObjectID(req.body._id) })
   var result=[];
-
   if(payments!=null){
      result = payments.appointments
   }

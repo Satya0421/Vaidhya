@@ -1,3 +1,4 @@
+process.env.UV_THREADPOOL_SIZE =12
 const express = require("express");
 const session = require('express-session')
 var body_parser=require('body-parser');
@@ -10,6 +11,8 @@ var db=require('./config/connection');
 var collection = require("./config/collections")
 const fileUpload = require('express-fileupload');
 const ObjectID = require("mongodb").ObjectID
+var compression = require('compression')
+const helmet = require("helmet");
 //  const checksum_lib = require('./checksum');
 const port = process.env.PORT || 3000;
 const app = express();
@@ -20,6 +23,8 @@ db.connect((err)=>{
   console.log("mongo connected")
 });
 app.use(express.json());
+app.use(compression({ level:6 ,threshold: 0}))
+app.use(helmet());
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');

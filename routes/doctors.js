@@ -4,7 +4,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 var db = require('../config/connection');
 var collection = require("../config/collections")
-// const crypto = require('crypto');
+const crypto = require('crypto');
 const config = require("../jwtconfig");
 const jwt = require("jsonwebtoken");
 // const fileupload = require("express-fileupload");
@@ -16,14 +16,16 @@ const { Collection } = require("mongodb");
 const cron = require("node-cron");
 // const sharp = require("sharp");
 // const upload = multer({ dest: "uploads/" });
+const fast2sms = require('fast-two-sms');
 const ObjectID = require("mongodb").ObjectID
-var body_parser=require('body-parser');
-app.use(body_parser.urlencoded({extended:false}));
-var multer  =   require('multer');
-  const upload = multer();
+var body_parser = require('body-parser');
+app.use(body_parser.urlencoded({ extended: false }));
+var multer = require('multer');
+const upload = multer();
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
+  var resu = false;
   await db.get()
     .collection(collection.DOCTORS).findOne({ $or: [{ phone: req.body.phone }, { username: req.body.email }] }, async (err, result) => {
       if (err) {
@@ -34,40 +36,60 @@ app.post('/register1', async (req, res) => {
         return res.status(403).json({ msg: "User Already exist" });
       }
       else {
-
-        // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
         var pass = await bcrypt.hash(req.body.password, 08);
-        await db.get()
-          .collection(collection.DOCTORS)
-          .insertOne(
-            {
-              password: pass,
-              name: req.body.name,
-              phone: req.body.phone,
-              username: req.body.email,
-              lvl: "1",
-              code: 1234,
-              status: "inactive",
-              location: {
-                type: "Point",
-                coordinates: [
-                  parseFloat(req.body.longtitude),
-                  parseFloat(req.body.latitude),
-                ]
+       
+        var j = 0
+        start:
+        while (1) {
+          var code = Math.floor(1000 + Math.random() * 9000)
+          let num = req.body.name.substring(0, req.body.name.indexOf(' '))+code;
+          // for (let i = 0; i < 8; i++) {
+          //   const randomIndex = Math.floor(Math.random() * chars.length);
+          //   num += chars[randomIndex];
+          // }
+          await db.get()
+            .collection(collection.DOCTORS)
+            .insertOne(
+              {
+                password: pass,
+                name: req.body.name,
+                phone: req.body.phone,
+                username: req.body.email,
+                lvl: "1",
+                code: code,
+                status: "inactive",
+                referId: num,
+                location: {
+                  type: "Point",
+                  coordinates: [
+                    parseFloat(req.body.longtitude),
+                    parseFloat(req.body.latitude),
+                  ]
+                }
               }
+            )
+            .then((result) => {
+              console.log(result)
+              if (result.acknowledged) {
+                fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
+                return res.status(200).json({ _id: result.insertedId })
+              }
+            })
+            .catch(() => {
+              resu = true;
+            });
+          if (resu) {
+            if (j != 2) {
+              j++;
+              continue  start;
             }
-          )
-          .then((result) => {
-            if (result.acknowledged) {
-              return res.status(200).json({ _id: result.insertedId })
-            }
-            else {
+            else
               return res.status(500).json({ msg: "Error to process... Try once more" });
-            }
-          })
-          .catch(() => {
-            return res.status(500).json({ msg: "Error to process... Try once more" });
-          });
+          }
+          else {
+            break start;
+          }
+        }
       }
     });
 })
@@ -80,7 +102,7 @@ app.post("/verifyPhone", async (req, res) => {
       {
         $set: {
           lvl: "2",
-          //  code: 123
+         code: 0
         },
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -92,6 +114,17 @@ app.post("/verifyPhone", async (req, res) => {
         }
       },
     );
+});
+app.post('/resendCode', async (req, res) => {
+  await db.get()
+    .collection(collection.DOCTORS)
+    .findOne(
+      {  _id: ObjectID(req.body._id) },
+      async (err, profile) => {
+         fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' One time Verification Code is :' + profile.code  + "\n ",  numbers : [parseInt(profile.phone)]})    
+         return res.status(200).json()
+      },
+    )
 });
 app.post('/register2', async (req, res) => {
   //console.log(req.body)
@@ -161,13 +194,13 @@ app.patch("/upload_profile_image/:_id", async (req, res) => {
   return res.status(200).json();
 });
 app.post("/upload_DoctorsIdProof/:_id", async (req, res) => {
-  
+
   let image = req.files.img
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
 app.patch("/upload_EducationCertificate/:_id", async (req, res) => {
- 
+
   let image = req.files.img
   image.mv('./uploads/EducationCertificate/' + req.params._id + ".jpg")
   return res.status(200).json();
@@ -178,9 +211,9 @@ app.patch("/upload_RegisterationCertificate/:_id", async (req, res) => {
   return res.status(200).json();
 });
 app.post('/forget_password', async (req, res) => {
-  // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
+   let num = req.body.name.substring(0, req.body.name.indexOf(' '))+code;
   //console.log(req.body)
-  var num = 1234
+  
   await db.get()
     .collection(collection.DOCTORS)
     .findOneAndUpdate(
@@ -197,15 +230,8 @@ app.post('/forget_password', async (req, res) => {
         if (err) {
           return res.status(500).json({ msg: "Error to process...Try once more" });
         }
-        //  fast2sms.sendMessage({authorization : process.env.API_KEY , message : 'Greetings From Pilasa .  One time code to reset your password is ' + num  ,  numbers : [parseInt(profile.value.phone)]})
-        // var mailOption = {
-        //   from: 'pilasa.ae@gmail.com',
-        //   to: req.body.username,
-        //   subject: 'Pilasa one time code',
-        //   html: `<h3>Greetings From Pilasa Family\n<br>
-        //   One time code to reset your password is<h3><h1>` + num + '<h1>'
-        // };
-        // transport.sendMail(mailOption, function (error, info) {
+        fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' Greetings From Vaidhya .  One time code to reset your password is ' + num  + "\n ",  numbers : [parseInt(profile.phone)]})    
+       
         return res.status(200).json({ _id: profile.value._id });
         // });
       },
@@ -247,7 +273,7 @@ app.post('/reset-password', async (req, res) => {
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
-          return res.status(200).json({ msg: "Suceessfully verified" });
+          return res.status(200).json({ msg: "Suceessfully Changed" });
         }
       },
     )
@@ -399,7 +425,6 @@ app.post('/updateProfile', async (req, res) => {
       {
         $set:
         {
-         
           experience: req.body.experience,
           address: req.body.address,
         }
@@ -419,14 +444,14 @@ app.post('/updateProfile', async (req, res) => {
 
 app.get('/displayReviews', middleware.checkToken, async function (req, res, next) {
   // res.json( await db.get().collection(collection.DOCTORSREVIEW).findOne({_id: ObjectID(req.decoded._id)}, {review: {$slice: -2}}))
-  var response=await db.get().collection(collection.DOCTORSREVIEW).aggregate(
+  var response = await db.get().collection(collection.DOCTORSREVIEW).aggregate(
     [
       {
         $match: { _id: ObjectID(req.decoded._id) }
       },
-   { $project: { review: { $slice: [ "$review", -75] },_id:0 } }
-]).toArray()
-res.status(200).json(response[0]["review"])
+      { $project: { review: { $slice: ["$review", -75] }, _id: 0 } }
+    ]).toArray()
+  res.status(200).json(response[0]["review"])
 });
 //// ***************Daily  appointmnets ***************************///
 app.post('/adddailyAppointment', middleware.checkToken, async function (req, res) {
@@ -512,8 +537,9 @@ app.post('/copydailyAppointments', middleware.checkToken, async (req, res) => {
         }
       },
     ]).toArray();
-  //console.log(result2)
+  console.log(result2)
   if (result2[0].appointments) {
+
     await db.get().collection(collection.BOOKINGS).updateOne({ _id: ObjectID(req.decoded._id) },
       {
         $pull: {
@@ -599,7 +625,7 @@ app.post('/findallCommingAppointments', middleware.checkToken, async function (r
         phone: '$appointments.phone',
         fees: '$appointments.fees',
         status: '$appointments.status',
-        summary:'$appointments.summary'
+        summary: '$appointments.summary'
       }
     },
   ]).sort({ 'appointments.time': -1 }).toArray()
@@ -649,7 +675,7 @@ app.post('/findallpastAppointments', middleware.checkToken, async function (req,
         patientid: '$appointments.patientid',
         fees: '$appointments.fees',
         status: '$appointments.status',
-        summary:'$appointments.summary'
+        summary: '$appointments.summary'
       }
     },
   ]).sort({ 'appointments.time': -1 }).toArray())
@@ -750,7 +776,7 @@ app.post('/cancelBookedAppointment', middleware.checkToken, async (req, res) => 
       ).then(async (result, err) => {
         if (result.modifiedCount == 1) {
           await db.get()
-            .collection(collection.DOCTORSPAYMENT)
+            .collection(collection.BOOKINGS)
             .updateOne({
               _id: ObjectID(req.decoded._id),
             },
@@ -790,43 +816,31 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
       "arrayFilters": [{ "inds.date": req.body.date }]
     },
   ).then(async (result, err) => {
-    //console.log(result.value)
+    // console.log(result.value)
     if (result.value.appointments.length > 0) {
-      result.value.appointments.map(async (i) => {
-        if (i.date == req.body.date)
-          await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(i.patientid) },
-            {
-              $set: { "appointments.$[inds].status": "cancelled" }
-            },
-            {
-              "arrayFilters": [{ "inds.date": i.date, "inds.time": i.time }]
-            },
-          )
-      })
-      //console.log("hello")
-      await db.get()
-        .collection(collection.DOCTORSPAYMENT)
-        .updateOne({
-          _id: ObjectID(req.decoded._id),
+      await db.get().collection(collection.USERSAPPOINTMENT).updateMany({},
+        {
+          $set: { "appointments.$[inds].status": "cancelled" }
         },
-          {
-            $inc: { balance: - req.body.fee }
-          },
-        )
-        .then((result) => {
-          if (result.modifiedCount == 1) {
-            return res.status(200).json({ msg: "Appointment Cancelled successful" });
-          }
-        })
+        {
+          "arrayFilters": [{ "inds.date": req.body.date, "inds.doctorsid": ObjectID(req.decoded._id) }]
+        },
+      )
     }
     db.get().collection(collection.BOOKINGS).updateOne(
       {
         _id: ObjectID(req.decoded._id)
       },
       {
-        $pull: { appointments: { date: req.body.date } }
+        $pull: { appointments: { date: req.body.date } },
+        $inc: { balance: - req.body.fee }
       }
     )
+      .then((result) => {
+
+        return res.status(200).json({ msg: "Appointment Cancelled successful" });
+
+      })
   })
 });
 app.post('/cancelAllUnBookedAppointmnets', middleware.checkToken, async (req, res) => {
@@ -895,13 +909,13 @@ app.post('/displaySummary', middleware.checkToken, async (req, res) => {
       $unwind: '$appointments'
     },
     {
-      $match: { 'appointments.date': req.body.date,'appointments.time': req.body.time }
+      $match: { 'appointments.date': req.body.date, 'appointments.time': req.body.time }
     },
     {
       $project: {
         _id: 0,
         summary: '$appointments.summary',
-      
+
       }
     },
   ]).toArray()
@@ -947,29 +961,20 @@ app.post('/updateConsultingFee', middleware.checkToken, async (req, res) => {
         onCall: req.body.onCall,
         onVideo: req.body.onVideo,
         doorStep: req.body.doorStep,
-      }
+      },
+      $pull: {
+        appointments: { treattype: { "$in": [req.body.doorStepStatus, req.body.onVideoStatus, req.body.onCallStatus, req.body.inClinicStatus] } },
+      },
     }).then(async (result) => {
       if (result.modifiedCount == 1) {
-         db.get().collection(collection.DOCTORSDAILYSLOT).updateOne(
+        db.get().collection(collection.DOCTORSDAILYSLOT).updateOne(
           {
             _id: ObjectID(req.decoded._id)
           },
-       
-          {
-            $pull: {
-              appointments: { treattype: { "$in": [req.body.doorStepStatus,req.body.onVideoStatus,req.body.onCallStatus,req.body.inClinicStatus] }},
-            },
 
-          }
-        )
-        db.get().collection(collection.BOOKINGS).updateOne(
-          {
-            _id: ObjectID(req.decoded._id)
-          },
-       
           {
             $pull: {
-              appointments: { treattype: { "$in": [req.body.doorStepStatus,req.body.onVideoStatus,req.body.onCallStatus,req.body.inClinicStatus] }},
+              appointments: { treattype: { "$in": [req.body.doorStepStatus, req.body.onVideoStatus, req.body.onCallStatus, req.body.inClinicStatus] } },
             },
 
           }
@@ -985,18 +990,10 @@ app.get('/findConsultingFee', middleware.checkToken, async (req, res) => {
   var result = await db.get().collection(collection.BOOKINGS).find(
     { _id: ObjectID(req.decoded._id) }).project({ _id: 0, doorStep: 1, inClinic: 1, onCall: 1, onVideo: 1 }).toArray()
   return res.status(200).json(result[0]);
-  // //console.log(result)
-  //   if (result.modifiedCount == 1) {
-  //     return res.status(200).json({ msg: "Suceessfull" });
-  //   }
-  //   else {
-  //     return res.status(500).json({ msg: "Error to process...Try once more" });
-  //   }
-
 });
 //// ***************Payment***************************///
 app.get('/CheckPaymentAccount', middleware.checkToken, async (req, res) => {
-  await db.get().collection(collection.DOCTORSPAYMENT)
+  await db.get().collection(collection.BOOKINGS)
     .findOne({ _id: ObjectID(req.decoded._id) })
     .then((result) => {
       if (result.accNo) {
@@ -1009,7 +1006,7 @@ app.get('/CheckPaymentAccount', middleware.checkToken, async (req, res) => {
     )
 });
 app.post('/updatePaymentaccount', middleware.checkToken, async (req, res) => {
-  await db.get().collection(collection.DOCTORSPAYMENT).updateOne(
+  await db.get().collection(collection.BOOKINGS).updateOne(
     { _id: ObjectID(req.decoded._id) },
     {
       $set:
@@ -1028,7 +1025,7 @@ app.post('/updatePaymentaccount', middleware.checkToken, async (req, res) => {
     })
 });
 app.get('/totalpayments', middleware.checkToken, async function (req, res) {
-  await db.get().collection(collection.DOCTORSPAYMENT).findOne({ _id: ObjectID(req.decoded._id) }).then((result) => {
+  await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.decoded._id) }).then((result) => {
     if (result) {
       //console.log(result)
       res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests.slice(-20) });
@@ -1038,7 +1035,7 @@ app.get('/totalpayments', middleware.checkToken, async function (req, res) {
 app.post('/requestPayment', middleware.checkToken, async (req, res) => {
   var today = new Date();
   await db.get()
-    .collection(collection.DOCTORSPAYMENT)
+    .collection(collection.BOOKINGS)
     .updateOne({
       _id: ObjectID(req.decoded._id),
     },
@@ -1059,28 +1056,12 @@ app.post('/requestPayment', middleware.checkToken, async (req, res) => {
     )
     .then(async (result) => {
       if (result.modifiedCount == 1) {
-        // await db.get().collection(collection.WITHDRAWPAYMENT)
-        //   .insertOne(
-        //     {
-        //       date: today,
-        //       amount: parseInt(req.body.amount),
-        //       status: "pending",
-        //       drid: req.decoded._id,
-        //     }
-        //   ).then((result, err) => {
-        //     //console.log(result)
-        //     if (result.acknowledged) {
-
-              return res.status(200).json({ msg: "Created successful" });
-
-          //   }
-          // })
+        return res.status(200).json({ msg: "Request Created successful" });
       }
       else {
         return res.status(500).json({ msg: "Error to process...Try once more" });
       }
     })
-
     .catch(() => {
       return res.status(500).json({ msg: "Error to process...Try once more" });
     });
