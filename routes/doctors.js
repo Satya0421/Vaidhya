@@ -212,7 +212,6 @@ app.patch("/upload_RegisterationCertificate/:_id", async (req, res) => {
 app.post('/forget_password', async (req, res) => {
    let num = req.body.name.substring(0, req.body.name.indexOf(' '))+code;
   //console.log(req.body)
-  
   await db.get()
     .collection(collection.DOCTORS)
     .findOneAndUpdate(
@@ -237,7 +236,7 @@ app.post('/forget_password', async (req, res) => {
     )
 });
 app.post("/verifyforgetpassword", async (req, res) => {
-  //console.log(req.body)
+  req.body.password = await bcrypt.hash(req.body.password, 08);
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -245,6 +244,7 @@ app.post("/verifyforgetpassword", async (req, res) => {
       {
         $set: {
           // lvl: "2",
+          password: req.body.password,
           code: 0
         },
       }, (err, result) => {
