@@ -204,6 +204,13 @@ router.get('/view-activeDoctors', verifyLogin, async function (req, res, next) {
   res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
 
 });
+router.get('/view-unSubscribed', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let doctors = await db.get().collection(collection.DOCTORS).find({ status: "unSubscribe" }).toArray()
+  res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
+
+});
+
 
 router.get('/view-doctor/:_id', verifyLogin, async function (req, res, next) {
   if (req.params._id != "assets") {
