@@ -285,6 +285,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
         {
             $match: {
                 $and: [{ department: req.body.department },
+                { category: req.body.category },
                 { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
             },
         },
@@ -409,7 +410,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
             projection: { "appointments.$": 1 }
         },
     );
-     fees = result.value.appointments[0].fees;
+    fees = result.value.appointments[0].fees;
     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
             $set: { "appointments.$[inds].status": "cancelled" }
@@ -440,9 +441,8 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
                 }
             });
         }
-        else
-        {
-            return res.status(500).json({ msg: "Error to process...Try once more" }); 
+        else {
+            return res.status(500).json({ msg: "Error to process...Try once more" });
         }
     });
 })
@@ -462,9 +462,10 @@ app.post('/review', middleware.checkToken, async (req, res) => {
                 _id: ObjectID(req.body.doctorid)
             },
 
-            { $inc: { rating: req.body.rating, totalRating: 5 } 
-        
-        }
+            {
+                $inc: { rating: req.body.rating, totalRating: 5 }
+
+            }
 
         ).then(async (result, err) => {
             if (req.body.comment != "") {

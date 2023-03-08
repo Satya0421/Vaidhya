@@ -234,6 +234,7 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
         await db.get().collection(collection.BOOKINGS).insertOne({
           _id: ObjectID(req.params._id),
           department: result.value.specality,
+          category:result.value.category,
           location: result.value.location,
           address: result.value.address,
           name: result.value.name,
@@ -269,6 +270,21 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
         res.redirect('back');
       }
     })
+});
+router.get('/view-doctors/unSubscribe/:_id/:username', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.DOCTORS).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe"
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+    
+            res.redirect('back');
+          })
+     
 });
 
 //// *************** Users***************************///

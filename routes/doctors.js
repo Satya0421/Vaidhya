@@ -140,11 +140,10 @@ app.post('/register2', async (req, res) => {
           specality: req.body.specality,
           gender: req.body.gender,
           city: req.body.city,
-          googlelocation: req.body.googlelocation,
+          category: req.body.category,
           experience: req.body.experience,
           address: req.body.address,
-          dob: req.body.dob,
-          area: req.body.area
+          dob: req.body.dob
         }
       }
     )
@@ -269,6 +268,7 @@ app.post('/reset-password', async (req, res) => {
       {
         $set: {
           password: req.body.password,
+          
         },
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -278,7 +278,29 @@ app.post('/reset-password', async (req, res) => {
       },
     )
 });
-
+app.get("/subFees", async (req, res) => {
+  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ _id: 0,'doctorsub':1 }).toArray())
+});
+app.post("/subscription", async (req, res) => {
+  await db.get()
+    .collection(collection.DOCTORS)
+    .updateOne(
+      { _id: ObjectID(req.body._id) },
+      {
+        $set: {
+          subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          lvl: "5",
+          referedBy:req.body.referedBy,
+          paymentId:req.body.paymentId
+        },
+      }, (err, result) => {
+        if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
+        if (result.modifiedCount == 1) {
+          return res.status(200).json({ msg: "Suceessfully Subscribed" });
+        }
+      },
+    )
+});
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {
   //console.log(req.body)
@@ -301,7 +323,10 @@ app.post("/login", async (req, res) => {
 
             }
             else if (user.lvl == "5") {
-              return res.status(403).json({ status: user.status, msg: " Your verification is under proccess , You can enjoy Vidhya Soon" });
+              return res.status(403).json({ status: user.status, msg: " Your verification is under proccess , You can enjoy Vaidhya Soon" });
+            }
+            else if (user.lvl == "6"&& user.status =="unSubscribe") {
+              return res.status(403).json({ status: user.status, msg: " Your Subscription plan is over .Contact Vaidhya to extend it" });
             }
             else {
               return res.status(403).json({ status: user.status, msg: "Account is on inactive state,Contact support ", lvl: user.lvl, _id: user._id, phone: user.phone, name: user.name });
@@ -926,7 +951,7 @@ app.post('/displaySummary', middleware.checkToken, async (req, res) => {
 
 //// ***************Data List***************************///
 app.get('/listofDepartment', async function (req, res) {
-  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1,'ayurvedicDepartment': 1, _id: 0 }).toArray())
+  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1,'ayurvedicDepartment': 1, _id: 0,doctorsub:1 }).toArray())
 });
 
 app.get('/listofcities', async function (req, res) {

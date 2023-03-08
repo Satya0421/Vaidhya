@@ -17,18 +17,19 @@
                     <input type="text" name="dob" class="form-control" value="{{doctors.dob}}">
                      <label for="address">Address</label>
                     <input type="text" name="address" class="form-control" value="{{doctors.address}}">
-                       <label for="area">Area</label>
-                    <input type="text" name="area" class="form-control" value="{{doctors.area}}">
-                       <label for="city">city</label>
-                    <input type="text" name="city" class="form-control" value="{{doctors.city}}">
+                       <label for="Category">Category</label>
+                    <input type="text" name="Category" class="form-control" value="{{doctors.category}}">
+                   
                     <label for="specality">Specality</label>
                     <input type="text" name="specality" class="form-control" value="{{doctors.specality}}">
                       <label for="qualifications">Qualifications</label>
                     <input type="text" name="qualifications" class="form-control" value="{{doctors.qualifications}}">
                      <label for="experience">Experience</label>
                     <input type="text" name="experience" class="form-control" value="{{doctors.experience}}">
-                      <label for="googlelocation">Google Location</label>
-                    <input type="text" name="googlelocation" class="form-control" value="{{doctors.googlelocation}}">
+                        <label for="subendDate">SubScription End Date</label>
+                    <input type="text" name="subendDate" class="form-control" value="{{doctors.subEnddate}}">
+                      <label for="referedby">Referd By</label>
+                    <input type="text" name="referedby" class="form-control" value="{{doctors.referedBy}}">
                    
 
                     {{!-- <label for="accName">accName</label>
@@ -94,11 +95,13 @@
                       <label for="status">Active Status</label>
                     <input type="text" name="status" class="form-control" value="{{doctors.status}}">
                     <br>
-                     <a href="/adminPanel/VidhyA789/view-doctors/active/{{doctors._id}}/{{doctors.username}}" class="btn btn-primary">Active</a>
-                    {{!-- <a href="/myFirstApp.AESoftwareSolution/Unni/SibiN.12.02.1996.JameS/AikarA/view-doctorses/block/{{doctors._id}}" class="btn btn-danger" onclick="return confirm('are you want to block {{doctors.username}}')">Block</a> --}}
+                    <a href="/adminPanel/VidhyA789/view-doctors/active/{{doctors._id}}/{{doctors.username}}" class="btn btn-primary">Active</a>
+                    <a href="/adminPanel/VidhyA789/view-doctors/unSubscribe/{{doctors._id}}/{{doctors.username}}" class="btn btn-danger" onclick="return confirm('are you want to UnSubscribe {{doctors.name}}')">UnSubscribe</a> 
                     <br>
                     <br>
             </div>
+
+            
           </form>
         </div>
 

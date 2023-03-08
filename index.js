@@ -1,4 +1,4 @@
-process.env.UV_THREADPOOL_SIZE =12
+ process.env.UV_THREADPOOL_SIZE =12
 const express = require("express");
 const session = require('express-session')
 var body_parser=require('body-parser');
@@ -23,8 +23,8 @@ db.connect((err)=>{
   console.log("mongo connected")
 });
 app.use(express.json());
-app.use(compression({ level:6 ,threshold: 0}))
-app.use(helmet());
+ app.use(compression({ level:6 ,threshold: 0}))
+//  app.use(helmet());
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -127,3 +127,8 @@ app.use(function (req, res, next) {
 app.listen(port, "0.0.0.0", () =>
   console.log(`welcome your listernig at port ${port}`)
 );// 0.0.0.0 for access through local host
+// app.get("/subscriptionenduser", async (req, res) => {
+//   await db.get()
+//     .collection(collection.DOCTORS)
+//     .find({ subEnddate: { $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } })
+// });
