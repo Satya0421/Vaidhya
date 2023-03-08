@@ -46,14 +46,15 @@
         background-color: #0073aa;
     }
 </style>
+
 {{#if fmsg }}
-<div class="alert alert-danger" role="alert">
-    <h6>Hospital Register is Failed. Please try later</h6>
+<div class="alert alert-danger" role="alert" onload="goBack()">
+    <h6>{fmsg}</h6>
 
 </div>
 {{/if}}
 {{#if smsg }}
-<div class="alert alert-success" role="alert" onload="goBack()">
+<div class="alert alert-success" role="alert" onloadeddata="goBack()">
     <h6> Hospital Registerd Successfully. We will get back to you soon"</h6>
 </div>
 {{/if}}
@@ -96,7 +97,7 @@
         </div>
     </div>
 </nav>
-<form action"/register/hospital" method="post" encType="multipart/form-data" onsubmit="return checkField()"
+<form action"/register/hospital" method="post" encType="multipart/form-data" 
     style="padding: 10px;">
     <h2 style="color: #0138e2;text-decoration: underline; ">Hospital Registration Form</h2>
     <br>
@@ -127,7 +128,8 @@
 
     </div>
     <div>
-        <p style="color: red">NB: We will use your device location as hospital location .If you are not Register from
+        <p style="color: red">NB: We will use your device location as hospital location .If you are not Register
+            from
             Hospital, please copy
             Hospital Google Location </p>
     </div>
@@ -161,10 +163,10 @@
     <br>
 
 </form>
-<script>
 
+<script>
     function goBack() {
-        window.history.back();
+        window.close();
     }
 
     function viewImage(event) {
@@ -183,6 +185,7 @@
     }
 
     function showPosition(position) {
+        alert("hello")
         document.getElementById("lat").value = position.coords.latitude;
         document.getElementById("lan").value = position.coords.longitude;
         document.getElementById("googleLocation").value = "https://www.google.com/maps/search/?api=1&query=" +
@@ -190,11 +193,3 @@
     }
 
 </script>
-{{!-- function checkField() {
-var fieldValue = document.getElementById("lat").value;
-if (fieldValue == "") {
-alert("Enable location Access");
-return false;
-}
-return true;
-} --}}

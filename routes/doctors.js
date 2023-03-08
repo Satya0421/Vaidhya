@@ -926,7 +926,7 @@ app.post('/displaySummary', middleware.checkToken, async (req, res) => {
 
 //// ***************Data List***************************///
 app.get('/listofDepartment', async function (req, res) {
-  res.json(await db.get().collection(collection.LISTOFITEMS).find().sort({ 'departments': -1 }).project({ 'departments': 1, _id: 0 }).toArray())
+  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1,'ayurvedicDepartment': 1, _id: 0 }).toArray())
 });
 
 app.get('/listofcities', async function (req, res) {
