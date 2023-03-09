@@ -248,7 +248,11 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
           rating:0,
           totalRating:0,
           balance: 0, 
-          grandtotal: 0 
+          grandtotal: 0,
+          doorStep: "0",
+          inClinic: "0",
+          onCall: "0",
+          onVideo: "0",
         }).then(async (response) => {
             await db.get().collection(collection.DOCTORSREVIEW).insertOne({ _id: ObjectID(req.params._id),}).then(async (response) => {
             await db.get().collection(collection.DOCTORSDAILYSLOT).insertOne({ _id: ObjectID(req.params._id) }).then(async (response) => {

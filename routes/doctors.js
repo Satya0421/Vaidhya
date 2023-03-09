@@ -210,7 +210,7 @@ app.patch("/upload_RegisterationCertificate/:_id", async (req, res) => {
   return res.status(200).json();
 });
 app.post('/forget_password', async (req, res) => {
-   let num = req.body.name.substring(0, req.body.name.indexOf(' '))+code;
+  var code = Math.floor(1000 + Math.random() * 9000)
   //console.log(req.body)
   await db.get()
     .collection(collection.DOCTORS)
@@ -218,7 +218,7 @@ app.post('/forget_password', async (req, res) => {
       { username: req.body.username },
       {
         $set: {
-          code: num
+          code: code
         },
       },
       (err, profile) => {
@@ -228,23 +228,20 @@ app.post('/forget_password', async (req, res) => {
         if (err) {
           return res.status(500).json({ msg: "Error to process...Try once more" });
         }
-        fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' Greetings From Vaidhya .  One time code to reset your password is ' + num  + "\n ",  numbers : [parseInt(profile.phone)]})    
-       
+        fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' Greetings From Vaidhya .  One time code to reset your password is ' + code  + "\n ",  numbers : [parseInt(profile.value.phone)]})    
         return res.status(200).json({ _id: profile.value._id });
         // });
       },
     )
 });
 app.post("/verifyforgetpassword", async (req, res) => {
-  req.body.password = await bcrypt.hash(req.body.password, 08);
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
       { $and: [{ _id: ObjectID(req.body._id) }, { code: req.body.code }] },
       {
         $set: {
-          // lvl: "2",
-          password: req.body.password,
+          // lvl: "2",         
           code: 0
         },
       }, (err, result) => {
@@ -260,14 +257,14 @@ app.post("/verifyforgetpassword", async (req, res) => {
     );
 });
 app.post('/reset-password', async (req, res) => {
-  req.body.password = await bcrypt.hash(req.body.password, 08);
+  var pass = await bcrypt.hash(req.body.password, 08);
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
       { _id: ObjectID(req.body._id) },
       {
         $set: {
-          password: req.body.password,
+          password: pass,
           
         },
       }, (err, result) => {
