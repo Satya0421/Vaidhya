@@ -1016,10 +1016,10 @@ app.get('/findConsultingFee', middleware.checkToken, async (req, res) => {
 //// ***************Payment***************************///
 app.get('/CheckPaymentAccount', middleware.checkToken, async (req, res) => {
   await db.get().collection(collection.BOOKINGS)
-    .findOne({ _id: ObjectID(req.decoded._id) })
+    .findOne({ _id: ObjectID(req.decoded._id), "accNo": { $ne: null } })
     .then((result) => {
-      if (result.accNo) {
-        res.status(200).json("Actiavted")
+      if (result!=null) {
+        res.status(200).json("Activated")
       }
       else {
         res.status(202).json("NotActivated")
@@ -1050,7 +1050,7 @@ app.get('/totalpayments', middleware.checkToken, async function (req, res) {
   await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.decoded._id) }).then((result) => {
     if (result) {
       //console.log(result)
-      res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests.slice(-20) });
+      res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests? result.requests.slice(-20):null });
     }
   })
 });
@@ -1088,6 +1088,56 @@ app.post('/requestPayment', middleware.checkToken, async (req, res) => {
       return res.status(500).json({ msg: "Error to process...Try once more" });
     });
 });
+//// ***************Subscription***************************///
+app.post("/subscriptionExtend", middleware.checkToken, async (req, res) => {
+  var output= await db.get()
+  .collection(collection.DOCTORS)
+  .findOne({_id: ObjectID(req.decoded._id)})
+ var newdate= new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  await db.get()
+    .collection(collection.DOCTORS)
+    .updateOne(
+      { _id: ObjectID(req.decoded._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          paymentId:req.body.paymentId
+        },
+      }, (err, result) => {
+       
+        if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
+        if (result.modifiedCount == 1) {
+          return res.status(200).json({ msg: "Suceessfully extended" ,date:newdate});
+        }
+        else
+        {
+          return res.status(500).json({ msg: "Error to process...Try once more" });
+        }
+      },
+    )
 
-
+//  var result =await db.get()
+//     .collection(collection.DOCTORS)
+//     .aggregate([
+//       {
+//         $match: { _id: ObjectID(req.body.id) }
+//       },
+//       {
+//         $project: {
+//           newDateField: {
+//             $add: ["$subEnddate", 365 * 24 * 60 * 60 * 1000]
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           newDateField: {
+//             $toDate: "$newDateField"
+//           }
+//         }
+//       }
+//     ]).toArray()
+//     res.json(result[0])
+});
 module.exports = app;
