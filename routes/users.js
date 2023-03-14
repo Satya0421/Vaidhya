@@ -9,7 +9,12 @@ require('dotenv').config();
 let middleware = require("../middleware");
 const bcrypt = require('bcryptjs');
 const ObjectID = require("mongodb").ObjectID
+const Razorpay = require('razorpay');
 
+const razorpay = new Razorpay({
+  key_id: 'rzp_test_r9BjXS8K8XqlTm',
+  key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+});
 //// ***************Registration***************************///
 app.post('/register', async (req, res) => {
     await db.get()
@@ -635,11 +640,149 @@ app.get('/listofcities', async function (req, res) {
 
 //// ***************List Data***************************///
 
-app.get('/hospitals', middleware.checkToken, async function (req, res) {
-    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ hospitalName: 1, _id: 1, phone: 1, address: 1, image: 1 }).toArray())
+// app.get('/hospitals', async function (req, res) {
+//     res.send(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ Name: 1, _id: 1, phone: 1, address: 1 ,location:1,image: 1 }).toArray())
+// });
+app.post('/hospitalsimage', async function (req, res) {
+    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.post('/hospitals', async function (req, res) {
+    res.send(await db.get().collection(collection.HOSPITAL_COLLECTION).aggregate([
+        {
+            $geoNear: {
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                distanceField: "distance",
+                maxDistance: 20000,
+                // query: { category: "Parks" },
+                // includeLocs: "dist.location",
+                spherical: true
+            }
+        },
+        {
+            $match: {
+
+                status: "Active",
+
+            },
+        },
+        { $sample: { size: 25 } }
+    ]).project({ image: 0 }).toArray())
 });
 
+app.post('/ambulanceimage', async function (req, res) {
+    res.json(await db.get().collection(collection.AMBULANCE_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.post('/ambulance', async function (req, res) {
+    res.send(await db.get().collection(collection.AMBULANCE_COLLECTION).aggregate([
+        {
+            $geoNear: {
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                distanceField: "distance",
+                maxDistance: 20000,
+                // query: { category: "Parks" },
+                // includeLocs: "dist.location",
+                spherical: true
+            }
+        },
+        {
+            $match: {
 
+                status: "Active",
+
+            },
+        },
+        { $sample: { size: 25 } }
+    ]).project({ image: 0 }).toArray())
+});
+
+app.post('/nurseimage', async function (req, res) {
+    res.json(await db.get().collection(collection.NURSE_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.post('/nurce', async function (req, res) {
+    res.send(await db.get().collection(collection.NURSE_COLLECTION).aggregate([
+        {
+            $geoNear: {
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                distanceField: "distance",
+                maxDistance: 20000,
+                // query: { category: "Parks" },
+                // includeLocs: "dist.location",
+                spherical: true
+            }
+        },
+        {
+            $match: {
+
+                status: "Active",
+
+            },
+        },
+        { $sample: { size: 15 } }
+    ]).project({ image: 0 }).toArray())
+});
+app.post('/labimage', async function (req, res) {
+    res.json(await db.get().collection(collection.LABS_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.post('/lab', async function (req, res) {
+    res.send(await db.get().collection(collection.LABS_COLLECTION).aggregate([
+        {
+            $geoNear: {
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                distanceField: "distance",
+                maxDistance: 20000,
+                // query: { category: "Parks" },
+                // includeLocs: "dist.location",
+                spherical: true
+            }
+        },
+        {
+            $match: {
+
+                status: "Active",
+
+            },
+        },
+        { $sample: { size: 15 } }
+    ]).project({ image: 0 }).toArray())
+});
+app.post('/pharmacyimage', async function (req, res) {
+    res.json(await db.get().collection(collection.PHARMACY_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.post('/pharmacy', async function (req, res) {
+    res.send(await db.get().collection(collection.PHARMACY_COLLECTION).aggregate([
+        {
+            $geoNear: {
+                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                distanceField: "distance",
+                maxDistance: 20000,
+                // query: { category: "Parks" },
+                // includeLocs: "dist.location",
+                spherical: true
+            }
+        },
+        {
+            $match: {
+
+                status: "Active",
+
+            },
+        },
+        { $sample: { size: 15 } }
+    ]).project({ image: 0 }).toArray())
+});
+app.post('/productimage', async function (req, res) {
+    res.json(await db.get().collection(collection.PRODUCT_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+});
+app.get('/product', async function (req, res) {
+    res.send(await db.get().collection(collection.PRODUCT_COLLECTION).aggregate([
+        { $sample: { size: 15 } }
+    ]).project({ image: 0 }).toArray())
+});
 // app.get('/crone', async function (req, res) {
 //     var date = new Date();
 //     var dates = date.getDate().toString().padStart(2, '0') + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getFullYear();
@@ -659,4 +802,96 @@ app.get('/hospitals', middleware.checkToken, async function (req, res) {
 //     //console.log(result[0])
 //     res.json(result)
 // });
+// app.get('/crone', async function (req, res) {
+//     var doctorResult =
+//         await db.get().collection(collection.DOCTORS).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "active"
+//             }
+//         ).project({ name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     // res.send(doctorResult)
+//     var hospiatlResult =
+//         await db.get().collection(collection.HOSPITAL_COLLECTION).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "Active"
+
+//             }
+//         ).project({ Name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     // console.log(hospiatlResult)
+//     var nurseresult =
+//         await db.get().collection(collection.NURSE_COLLECTION).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "Active"
+
+//             }
+//         ).project({ Name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     var labsresult =
+//         await db.get().collection(collection.LABS_COLLECTION).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "Active"
+
+//             }
+//         ).project({ Name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     var pharmacyresult =
+//         await db.get().collection(collection.PHARMACY_COLLECTION).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "Active"
+
+//             }
+//         ).project({ Name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     var ambulanceResult =
+//         await db.get().collection(collection.AMBULANCE_COLLECTION).find(
+//             {
+//                 subEnddate: {
+//                     $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+//                     $lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+//                 },
+//                 status: "Active"
+
+//             }
+//         ).project({ Name: 1, phone: 1, subEnddate: 1 }).toArray()
+//     await db.get().collection(collection.EXPIRING_COLLECTION).updateOne(
+//         {
+
+//         },
+//         {
+//             $set: {
+//                 doctors: doctorResult,
+//                 hospital: hospiatlResult,
+//                 nurse: nurseresult,
+//                 lab: labsresult,
+//                 pharmacy: pharmacyresult,
+//                 ambulance: ambulanceResult
+//             },
+//         }
+
+//     )
+// });
+app.get('/refundGenerate', async function (req, res) {
+    const refund = await razorpay.payments.refund('pay_Kj03QXKxsLPxYp', {
+        amount: 50000, // amount in paise
+        speed: 'optimum',
+      });
+      res.json(refund)
+})
 module.exports = app;

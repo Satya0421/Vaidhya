@@ -1,0 +1,38 @@
+<section>
+  <div class="container">
+    <h3>{{this.status}}</h3>
+   <a href="/adminPanel/VidhyA789/addProducts "
+              class="btn btn-primary" style="float: right;">Add Product</a>
+
+    <br>
+     <br>   
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          {{!-- <th scope="col">Link</th> --}}
+          <th scope="col">Details</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each product}}
+        <tr>
+          <td>{{this._id}}</td>
+           <td>{{this.Name}}</td>
+          {{!-- <td>{{this.link}}</td> --}}
+          <td>{{this.details}}</td>
+            <td> <a href="delete-product/{{this._id}}" class="btn btn-danger" onclick="return confirm('are you want to Delete Product')">Delete</a></td>
+            <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  $(function () {
+    $('#churchTable').DataTable();
+  });
+</script>

@@ -210,22 +210,29 @@ router.get('/view-unSubscribed', verifyLogin, async function (req, res, next) {
   res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
 
 });
+router.get('/view-expiringDoctors',  async function (req, res, next) {
+  var status = "Expiring Doctors "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,doctors:1}).toArray()
+  var data=list[0].doctors
+  
+  res.render('admin/doctors/expiringDoctorList', { login: true, data, status })
 
+});
 
 router.get('/view-doctor/:_id', verifyLogin, async function (req, res, next) {
   if (req.params._id != "assets") {
     // console.log(req.params)
-  let doctors = await db.get().collection(collection.DOCTORS).findOne({ _id: ObjectID(req.params._id) })
-  //(church)
-  res.render('admin/doctors/view-doctor', { login: true, doctors })
+    let doctors = await db.get().collection(collection.DOCTORS).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/doctors/view-doctor', { login: true, doctors })
   }
-else {
-  res.redirect('back');
-}
+  else {
+    res.redirect('back');
+  }
 
 });
 
-router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (req, res, next) {
+router.get('/view-doctors/active/:_id', verifyLogin, async function (req, res, next) {
   await db.get().collection(collection.DOCTORS).findOneAndUpdate(
     { _id: ObjectID(req.params._id) },
     {
@@ -241,20 +248,20 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
         await db.get().collection(collection.BOOKINGS).insertOne({
           _id: ObjectID(req.params._id),
           department: result.value.specality,
-          category:result.value.category,
+          category: result.value.category,
           location: result.value.location,
           address: result.value.address,
           name: result.value.name,
-          rating:0,
-          totalRating:0,
-          balance: 0, 
+          rating: 0,
+          totalRating: 0,
+          balance: 0,
           grandtotal: 0,
           doorStep: "0",
           inClinic: "0",
           onCall: "0",
           onVideo: "0",
         }).then(async (response) => {
-            await db.get().collection(collection.DOCTORSREVIEW).insertOne({ _id: ObjectID(req.params._id),}).then(async (response) => {
+          await db.get().collection(collection.DOCTORSREVIEW).insertOne({ _id: ObjectID(req.params._id), }).then(async (response) => {
             await db.get().collection(collection.DOCTORSDAILYSLOT).insertOne({ _id: ObjectID(req.params._id) }).then(async (response) => {
 
               //           var mailOption = {
@@ -275,27 +282,75 @@ router.get('/view-doctors/active/:_id/:username', verifyLogin, async function (r
             });
             res.redirect('back');
           })
-      })
+        })
       }
       else {
         res.redirect('back');
       }
     })
 });
-router.get('/view-doctors/unSubscribe/:_id/:username', verifyLogin, async function (req, res, next) {
+router.get('/view-doctors/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
   await db.get().collection(collection.DOCTORS).findOneAndUpdate(
     { _id: ObjectID(req.params._id) },
     {
       $set:
       {
-        status: "unSubscribe"
+        status: "unSubscribe",
+        subEnddate: "",
       }
     }).then(async (result) => {
-      // //console.log(result.value)
-    
-            res.redirect('back');
-          })
-     
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              doctors: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-doctors/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.DOCTORS)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.DOCTORS)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              doctors: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
 });
 
 //// *************** Users***************************///
@@ -342,7 +397,7 @@ router.get('/view-activePayment', verifyLogin, async function (req, res, next) {
 
 });
 router.get('/viewPayment/:_id/:reqid/:amt', verifyLogin, async (req, res) => {
-  
+
   let requests = await db.get().collection(collection.BOOKINGS).aggregate([
     {
       $match: { _id: ObjectID(req.params._id) }
@@ -369,31 +424,30 @@ router.get('/viewPayment/:_id/:reqid/:amt', verifyLogin, async (req, res) => {
     }
   ]).toArray();
   var result = requests[0];
-  console.log(result)
+  
   res.render('admin/payment/viewPayment', { login: true, result })
 });
 router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
- 
-  if(req.body.trId == null)
-  {
+
+  if (req.body.trId == null) {
     res.redirect('back');
   }
-  else{
+  else {
     //console.log(req.body)
-  let requests = await db.get().collection(collection.BOOKINGS).updateOne(
-    {
-      _id: ObjectID(req.params._id)
-    },
-    {
-      $set: { 'requests.$[inds].payDate': req.body.payDate == "" ? new Date() : req.body.payDate, 'requests.$[inds].trId': req.body.trId, 'requests.$[inds].status': 'Transferred' }
-    },
-    {
-      "arrayFilters": [{ "inds.amount": parseInt(req.body.amt), "inds.reqid": ObjectID(req.params.reqid) }]
-    },
-  ).then((result, err) => { 
-    //console.log(result)
-  })
-  res.redirect('back');
+    let requests = await db.get().collection(collection.BOOKINGS).updateOne(
+      {
+        _id: ObjectID(req.params._id)
+      },
+      {
+        $set: { 'requests.$[inds].payDate': req.body.payDate == "" ? new Date() : req.body.payDate, 'requests.$[inds].trId': req.body.trId, 'requests.$[inds].status': 'Transferred' }
+      },
+      {
+        "arrayFilters": [{ "inds.amount": parseInt(req.body.amt), "inds.reqid": ObjectID(req.params.reqid) }]
+      },
+    ).then((result, err) => {
+      //console.log(result)
+    })
+    res.redirect('back');
   }
 });
 
@@ -404,15 +458,13 @@ router.get('/view-doctorRecentPayment', verifyLogin, async function (req, res, n
 });
 router.post('/view-doctorRecentPayment', verifyLogin, async function (req, res, next) {
   var status = "Doctors Recent Payment Requests  "
-  if(req.body._id =="")
-  {
+  if (req.body._id == "") {
     res.redirect('back');
   }
-  else
-  {
-  let payments = await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.body._id) })
-  let result = payments
-  res.render('admin/payment/doctor_recentPayment', { login: true, result, status })
+  else {
+    let payments = await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.body._id) })
+    let result = payments
+    res.render('admin/payment/doctor_recentPayment', { login: true, result, status })
   }
 });
 
@@ -425,19 +477,17 @@ router.get('/user_bookings', verifyLogin, async function (req, res, next) {
 });
 router.post('/user_bookings', verifyLogin, async function (req, res, next) {
   var status = "Users Booking "
-  if(req.body._id =="")
-  {
+  if (req.body._id == "") {
     res.redirect('back');
   }
-  else
-  {
-  let payments = await db.get().collection(collection.USERSAPPOINTMENT).findOne({ _id: ObjectID(req.body._id) })
-  var result=[];
-  if(payments!=null){
-     result = payments.appointments
-  }
-  // //console.log(result)
-  res.render('admin/users/user_bookings', { login: true, result, status })
+  else {
+    let payments = await db.get().collection(collection.USERSAPPOINTMENT).findOne({ _id: ObjectID(req.body._id) })
+    var result = [];
+    if (payments != null) {
+      result = payments.appointments
+    }
+    // //console.log(result)
+    res.render('admin/users/user_bookings', { login: true, result, status })
   }
 });
 router.get('/doctors_bookings', verifyLogin, async function (req, res, next) {
@@ -447,20 +497,18 @@ router.get('/doctors_bookings', verifyLogin, async function (req, res, next) {
 });
 router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
   //console.log(req.body.month+"-"+req.body.year)
-  if(req.body._id =="")
-  {
+  if (req.body._id == "") {
     res.redirect('back');
   }
-  else
-  {
-  var status = "Doctors Booking"
-  let bookings = await db.get().collection(req.body.month+"-"+req.body.year).findOne({ _id: ObjectID(req.body._id) })
-  var result=[];
-  if(bookings!=null){
-     result = bookings.appointments
-  }
-  //console.log(result)
-  res.render('admin/doctors/doctor_bookings', { login: true, result, status })
+  else {
+    var status = "Doctors Booking"
+    let bookings = await db.get().collection(req.body.month + "-" + req.body.year).findOne({ _id: ObjectID(req.body._id) })
+    var result = [];
+    if (bookings != null) {
+      result = bookings.appointments
+    }
+    //console.log(result)
+    res.render('admin/doctors/doctor_bookings', { login: true, result, status })
   }
 });
 // router.post('/addcities', async (req, res) => {
@@ -491,49 +539,46 @@ router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
 //// *************** list of cities***************************///
 router.get('/addcities', verifyLogin, async function (req, res, next) {
   var status = "Locations "
-  var out=await db.get().collection(collection.LISTOFITEMS).find().toArray();
+  var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
-  if(out[0].cities != "")
-  {
-   var result=out[0].cities;
-  // //console.log(result)
-   res.render('admin/listdata/locationList', { login: true, status,result})
+  if (out[0].cities != "") {
+    var result = out[0].cities;
+    // //console.log(result)
+    res.render('admin/listdata/locationList', { login: true, status, result })
   }
-  else
-  {
+  else {
     res.redirect('back');
   }
-  
+
 });
 router.post('/addcities', verifyLogin, async (req, res) => {
 
-if( req.body.city==''||req.body.longtitude==''||req.body.latitude=='')
-{
-  res.redirect('back');
-}else{
-  var city= [{
-    "city":req.body.city,
-   "longtitude":req.body.longtitude,
-   "latitude":req.body.latitude,
-    }];
-  var status = "Locations "
-  await db.get().collection(collection.LISTOFITEMS)
-    .updateOne(
-      {
-        _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
-      },
-      {
-        $push: {
-          cities: {
-            $each: city,
-            $sort: { city: 1 },
-            //  $slice: 3
-          }
-        }
-      },
-    )
+  if (req.body.city == '' || req.body.longtitude == '' || req.body.latitude == '') {
     res.redirect('back');
-}
+  } else {
+    var city = [{
+      "city": req.body.city,
+      "longtitude": req.body.longtitude,
+      "latitude": req.body.latitude,
+    }];
+    var status = "Locations "
+    await db.get().collection(collection.LISTOFITEMS)
+      .updateOne(
+        {
+          _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
+        },
+        {
+          $push: {
+            cities: {
+              $each: city,
+              $sort: { city: 1 },
+              //  $slice: 3
+            }
+          }
+        },
+      )
+    res.redirect('back');
+  }
 })
 router.get('/deletecities/:city', verifyLogin, async (req, res) => {
   await db.get().collection(collection.LISTOFITEMS)
@@ -549,46 +594,43 @@ router.get('/deletecities/:city', verifyLogin, async (req, res) => {
         }
       },
     )
-    res.redirect('back');
+  res.redirect('back');
 })
 //// *************** list of Department***************************///
-router.get('/addDepartment', verifyLogin, async function (req, res, next) {
-  var status = "Departments "
-  var out=await db.get().collection(collection.LISTOFITEMS).find().toArray();
+router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, next) {
+  var status = "Ayurvedic Departments "
+  var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
-  if(out[0].departments != "")
-  {
-   var result=out[0].departments;
-  // //console.log(result)
-   res.render('admin/listdata/departmentList', { login: true, status,result})
+  if (out[0].ayurvedicDepartment != "") {
+    var result = out[0].ayurvedicDepartment;
+    // //console.log(result)
+    res.render('admin/listdata/AyurvedicdepartmentList', { login: true, status, result })
   }
-  else
-  {
+  else {
     res.redirect('back');
   }
-  
+
 });
-router.post('/addDepartment', verifyLogin, async (req, res) => {
-//console.log(req.body.department)
-if( req.body.department=='')
-{
-  res.redirect('back');
-}else{
-  await db.get().collection(collection.LISTOFITEMS)
-    .updateOne(
-      {
-        _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
-      },
-      {
-        $push: {
-          departments:  req.body.department
-        }
-      },
-    )
+router.post('/addAyurvedicDepartment', verifyLogin, async (req, res) => {
+  //console.log(req.body.department)
+  if (req.body.department == '') {
     res.redirect('back');
-}
+  } else {
+    await db.get().collection(collection.LISTOFITEMS)
+      .updateOne(
+        {
+          _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
+        },
+        {
+          $push: {
+            ayurvedicDepartment: req.body.department
+          }
+        },
+      )
+    res.redirect('back');
+  }
 })
-router.get('/deleteDepartment/:department', verifyLogin, async (req, res) => {
+router.get('/deleteAyurvedicDepartment/:department', verifyLogin, async (req, res) => {
   await db.get().collection(collection.LISTOFITEMS)
     .updateOne(
       {
@@ -596,11 +638,766 @@ router.get('/deleteDepartment/:department', verifyLogin, async (req, res) => {
       },
       {
         $pull: {
-          departments: 
+          ayurvedicDepartment:
             req.params.department,
         }
       },
     )
-    res.redirect('back');
+  res.redirect('back');
 })
+
+router.get('/addGeneralDepartment', verifyLogin, async function (req, res, next) {
+  var status = "General Departments "
+  var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
+  // {projection: { _id: 0, cities: 1 }}
+  if (out[0].generaldepartments != "") {
+    var result = out[0].generaldepartments;
+    // //console.log(result)
+    res.render('admin/listdata/GeneralDepartmentList', { login: true, status, result })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+router.post('/addGeneralDepartment', verifyLogin, async (req, res) => {
+  //console.log(req.body.department)
+  if (req.body.department == '') {
+    res.redirect('back');
+  } else {
+    await db.get().collection(collection.LISTOFITEMS)
+      .updateOne(
+        {
+          _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
+        },
+        {
+          $push: {
+            generaldepartments: req.body.department
+          }
+        },
+      )
+    res.redirect('back');
+  }
+})
+router.get('/deleteGeneralDepartment/:department', verifyLogin, async (req, res) => {
+  await db.get().collection(collection.LISTOFITEMS)
+    .updateOne(
+      {
+        _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
+      },
+      {
+        $pull: {
+          generaldepartments:
+            req.params.department,
+        }
+      },
+    )
+  res.redirect('back');
+})
+//// *************** hospiatl***************************///
+
+router.get('/view-inactivehospital', verifyLogin, async function (req, res, next) {
+  var status = "InActive "
+  let hospital = await db.get().collection(collection.HOSPITAL_COLLECTION).find({ status: "inActive" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/hospital/hospital_list', { login: true, hospital, status })
+
+});
+router.get('/view-activeHospitals', verifyLogin, async function (req, res, next) {
+  var status = "Active "
+  let hospital = await db.get().collection(collection.HOSPITAL_COLLECTION).find({ status: "Active" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/hospital/hospital_list', { login: true, hospital, status })
+
+});
+router.get('/view-unSubscribedhospitals', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let hospital = await db.get().collection(collection.HOSPITAL_COLLECTION).find({ status: "unSubscribe" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/hospital/hospital_list', { login: true, hospital, status })
+
+});
+
+router.get('/view-hospital/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
+    let hospital = await db.get().collection(collection.HOSPITAL_COLLECTION).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/hospital/view_hospital', { login: true, hospital })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+
+router.get('/view-hospital/active/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.HOSPITAL_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "Active",
+        subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    }
+    )
+});
+router.get('/view-hospital/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.HOSPITAL_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    })
+
+});
+router.get('/view-expiringHospital',  async function (req, res, next) {
+  var status = "Expiring Hospital "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,hospital:1}).toArray()
+  var data=list[0].hospital
+  // console.log(data)
+  res.render('admin/hospital/expiringHospitalList', { login: true, data, status })
+
+});
+router.get('/view-hospital/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.HOSPITAL_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              hospital: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-hospital/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.HOSPITAL_COLLECTION)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.HOSPITAL_COLLECTION)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          // paymentId: req.body.paymentId
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              hospital: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
+});
+//// *************** pharmacy***************************///
+
+router.get('/view-inactivepharmacy', verifyLogin, async function (req, res, next) {
+  var status = "InActive "
+  let pharmacy = await db.get().collection(collection.PHARMACY_COLLECTION).find({ status: "inActive" }).project({ image: 0, location: 0 }).toArray()
+
+  res.render('admin/pharmacy/pharmacy_list', { login: true, pharmacy, status })
+
+});
+router.get('/view-activepharmacy', verifyLogin, async function (req, res, next) {
+  var status = "Active "
+  let pharmacy = await db.get().collection(collection.PHARMACY_COLLECTION).find({ status: "Active" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/pharmacy/pharmacy_list', { login: true, pharmacy, status })
+
+});
+router.get('/view-unSubscribedpharmacy', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let pharmacy = await db.get().collection(collection.PHARMACY_COLLECTION).find({ status: "unSubscribe" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/pharmacy/pharmacy_list', { login: true, pharmacy, status })
+
+});
+
+router.get('/view-pharmacy/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
+    let pharmacy = await db.get().collection(collection.PHARMACY_COLLECTION).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/pharmacy/view_pharmacy', { login: true, pharmacy })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+
+router.get('/view-pharmacy/active/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.PHARMACY_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "Active",
+        subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    }
+    )
+});
+router.get('/view-expiringPharmacy',  async function (req, res, next) {
+  var status = "Expiring Pharmacy "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,pharmacy:1}).toArray()
+  var data=list[0].pharmacy
+  // console.log(data)
+  res.render('admin/pharmacy/expiringPharmacyList', { login: true, data, status })
+
+});
+router.get('/view-pharmacy/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.PHARMACY_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              pharmacy: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-pharmacy/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.PHARMACY_COLLECTION)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.PHARMACY_COLLECTION)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          // paymentId: req.body.paymentId
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              pharmacy: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
+});
+//// *************** nurse***************************///
+
+router.get('/view-inactivenurse', verifyLogin, async function (req, res, next) {
+  var status = "InActive "
+  let nurse = await db.get().collection(collection.NURSE_COLLECTION).find({ status: "inActive" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/nurse/nurse_list', { login: true, nurse, status })
+
+});
+router.get('/view-activenurse', verifyLogin, async function (req, res, next) {
+  var status = "Active "
+  let nurse = await db.get().collection(collection.NURSE_COLLECTION).find({ status: "Active" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/nurse/nurse_list', { login: true, nurse, status })
+
+});
+router.get('/view-unSubscribednurse', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let nurse = await db.get().collection(collection.NURSE_COLLECTION).find({ status: "unSubscribe" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/nurse/nurse_list', { login: true, nurse, status })
+
+});
+
+router.get('/view-nurse/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
+    let nurse = await db.get().collection(collection.NURSE_COLLECTION).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/nurse/view_nurse', { login: true, nurse })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+
+router.get('/view-nurse/active/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.NURSE_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "Active",
+        subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    }
+    )
+});
+router.get('/view-expiringNurce',  async function (req, res, next) {
+  var status = "Expiring Nurce "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,nurse:1}).toArray()
+  var data=list[0].nurse
+  // console.log(data)
+  res.render('admin/nurse/expiringNurceList', { login: true, data, status })
+
+});
+router.get('/view-nurse/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.NURSE_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              nurse: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-nurse/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.NURSE_COLLECTION)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.NURSE_COLLECTION)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          // paymentId: req.body.paymentId
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              nurse: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
+});
+
+
+//// *************** lab***************************///
+
+router.get('/view-inactivelab', verifyLogin, async function (req, res, next) {
+  var status = "InActive "
+  let lab = await db.get().collection(collection.LABS_COLLECTION).find({ status: "inActive" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/lab/lab_list', { login: true, lab, status })
+
+});
+router.get('/view-activelab', verifyLogin, async function (req, res, next) {
+  var status = "Active "
+  let lab = await db.get().collection(collection.LABS_COLLECTION).find({ status: "Active" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/lab/lab_list', { login: true, lab, status })
+
+});
+router.get('/view-unSubscribedlab', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let lab = await db.get().collection(collection.LABS_COLLECTION).find({ status: "unSubscribe" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/lab/lab_list', { login: true, lab, status })
+
+});
+
+router.get('/view-lab/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
+    let lab = await db.get().collection(collection.LABS_COLLECTION).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/lab/view_lab', { login: true, lab })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+
+router.get('/view-lab/active/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.LABS_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "Active",
+        subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    }
+    )
+});
+// router.get('/view-lab/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+//   await db.get().collection(collection.LABS_COLLECTION).findOneAndUpdate(
+//     { _id: ObjectID(req.params._id) },
+//     {
+//       $set:
+//       {
+//         status: "unSubscribe",
+//         subEnddate: "",
+//       }
+//     }).then(async (result) => {
+//       // //console.log(result.value)
+
+//       res.redirect('back');
+//     })
+
+// });
+router.get('/view-expiringLab',  async function (req, res, next) {
+  var status = "Expiring Lab "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,lab:1}).toArray()
+  var data=list[0].lab
+  // console.log(data)
+  res.render('admin/lab/expiringLabList', { login: true, data, status })
+
+});
+router.get('/view-lab/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.LABS_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              lab: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-lab/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.LABS_COLLECTION)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.LABS_COLLECTION)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          // paymentId: req.body.paymentId
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              lab: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
+});
+
+
+//// *************** ambulance***************************///
+
+router.get('/view-inactiveambulance', verifyLogin, async function (req, res, next) {
+  var status = "InActive "
+  let ambulance = await db.get().collection(collection.AMBULANCE_COLLECTION).find({ status: "inActive" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/ambulance/ambulance_list', { login: true, ambulance, status })
+
+});
+router.get('/view-activeambulance', verifyLogin, async function (req, res, next) {
+  var status = "Active "
+  let ambulance = await db.get().collection(collection.AMBULANCE_COLLECTION).find({ status: "Active" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/ambulance/ambulance_list', { login: true, ambulance, status })
+
+});
+router.get('/view-unSubscribedambulance', verifyLogin, async function (req, res, next) {
+  var status = "UnSubscribed "
+  let ambulance = await db.get().collection(collection.AMBULANCE_COLLECTION).find({ status: "unSubscribe" }).project({ image: 0, location: 0 }).toArray()
+  res.render('admin/ambulance/ambulance_list', { login: true, ambulance, status })
+
+});
+
+
+router.get('/view-ambulance/:_id', verifyLogin, async function (req, res, next) {
+  if (req.params._id != "assets") {
+    // console.log(req.params)
+    let ambulance = await db.get().collection(collection.AMBULANCE_COLLECTION).findOne({ _id: ObjectID(req.params._id) })
+    //(church)
+    res.render('admin/ambulance/view_ambulance', { login: true, ambulance })
+  }
+  else {
+    res.redirect('back');
+  }
+
+});
+
+router.get('/view-ambulance/active/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.AMBULANCE_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "Active",
+        subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      }
+    }).then(async (result) => {
+      // //console.log(result.value)
+
+      res.redirect('back');
+    }
+    )
+});
+// router.get('/view-ambulance/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+//   await db.get().collection(collection.AMBULANCE_COLLECTION).findOneAndUpdate(
+//     { _id: ObjectID(req.params._id) },
+//     {
+//       $set:
+//       {
+//         status: "unSubscribe",
+//         subEnddate: "",
+//       }
+//     }).then(async (result) => {
+//       // //console.log(result.value)
+
+//       res.redirect('back');
+//     })
+
+// });
+router.get('/view-expiringAmbulance',  async function (req, res, next) {
+  var status = "Expiring Ambulance "
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,ambulance:1}).toArray()
+  var data=list[0].ambulance
+  // console.log(data)
+  res.render('admin/ambulance/expiringAmbulanceList', { login: true, data, status })
+
+});
+router.get('/view-ambulance/unSubscribe/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.AMBULANCE_COLLECTION).findOneAndUpdate(
+    { _id: ObjectID(req.params._id) },
+    {
+      $set:
+      {
+        status: "unSubscribe",
+        subEnddate: "",
+      }
+    }).then(async (result) => {
+      res.redirect('back');
+      await db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              ambulance: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        )
+    })
+
+});
+router.get('/view-ambulance/extend/:_id', verifyLogin, async function (req, res, next) {
+  var output = await db.get()
+    .collection(collection.AMBULANCE_COLLECTION)
+    .findOne({ _id: ObjectID(req.params._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
+  await db.get()
+    .collection(collection.AMBULANCE_COLLECTION)
+    .updateOne(
+      { _id: ObjectID(req.params._id) },
+      {
+        // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+        $set: {
+          subEnddate: newdate,
+          // paymentId: req.body.paymentId
+        },
+      }, (err, result) => {
+        
+         db.get().collection(collection.EXPIRING_COLLECTION)
+        .updateOne(
+          {
+          },
+          {
+            $pull: {
+              ambulance: {
+                _id: ObjectID(req.params._id),
+              }
+            }
+          },
+        ) 
+        res.redirect('back');
+      },
+    )
+
+});
+
+//// *************** Product***************************///
+router.get('/listOfProducts', verifyLogin, async function (req, res, next) {
+  var status = "List Of Products "
+  let product = await db.get().collection(collection.PRODUCT_COLLECTION).find().project({ image: 0 }).toArray()
+  res.render('admin/products/listOfProducts', { login: true, product, status })
+
+});
+router.get('/addProducts', async (req, res) => {
+  res.render('admin/products/addProducts')
+})
+router.post('/addProducts', async (req, res) => {
+  var image2 = req?.files?.img
+  await image2.mv('./uploads/regImages/' + req.body.name + ".png");
+  const image = await fs.readFileSync('./uploads/regImages/' + req.body.name + ".png");
+  const base64Data = Buffer.from(image).toString('base64');
+  fs.unlink('./uploads/regImages/' + req.body.name + ".png", (err, done) => {  // deleting image of the product  
+  })
+  await db.get()
+    .collection(collection.PRODUCT_COLLECTION)
+    .insertOne(
+      {
+        Name: req.body.name,
+        link: req.body.link,
+        details: req.body.details,
+        image: base64Data,
+      }
+    )
+    .then(async (result) => {
+
+      res.redirect('listOfProducts');
+      // req.session.registrationSuccess = true;
+    })
+
+})
+router.get('/delete-product/:_id', verifyLogin, async function (req, res, next) {
+  await db.get().collection(collection.PRODUCT_COLLECTION).deleteOne(
+    { _id: ObjectID(req.params._id) }
+  ).then(() => {
+    res.redirect('back');
+  })
+});
 module.exports = router;

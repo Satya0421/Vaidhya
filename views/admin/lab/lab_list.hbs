@@ -1,0 +1,35 @@
+<section>
+  <div class="container">
+    <h3>{{this.status}} Labs</h3>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">phone</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each lab}}
+        <tr>
+          <td>{{this._id}}</td>
+          <td>{{this.Name}}</td>
+          <td>{{this.email}}</td>
+          <td>{{this.phone}}</td>
+          <td><a href="/adminPanel/VidhyA789/view-lab/{{this._id}} "
+              class="btn btn-primary">View</a>
+            <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  $(function () {
+    $('#churchTable').DataTable();
+  });
+</script>

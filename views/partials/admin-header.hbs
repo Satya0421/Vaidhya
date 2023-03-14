@@ -18,8 +18,9 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactiveDoctors">New Doctors</a>
                         <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activeDoctors">Active Doctors</a>
-                         <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribed">UnSubscribed Doctors</a>
-                        
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringDoctors">Expiring Doctors</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribed">UnSubscribed Doctors</a>
+
                     </div>
                 </div>
                 <div class="dropdown">
@@ -31,48 +32,123 @@
                         <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activePayment">New payment
                             requests</a>
                         <a class="dropdown-item" href="/adminPanel/VidhyA789/view-doctorRecentPayment">Doctors payments
-                            </a>
+                        </a>
                     </div>
                 </div>
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Bookings
-            </button>
-            
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="/adminPanel/VidhyA789/doctors_bookings">Doctors 
-                    Bookings</a>
-                   <a class="dropdown-item" href="/adminPanel/VidhyA789/user_bookings">User 
-                    Bookings</a>
-            </div>
-        </div>
-       
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                user
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activeUser"> Active Users</a>
-                 <a class="dropdown-item" href="/adminPanel/VidhyA789/view-InactiveUser"> Inactive Users</a>
-            </div>
-        </div>
-         <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                List
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="/adminPanel/VidhyA789/addcities"> Location List</a>
-                 <a class="dropdown-item" href="/adminPanel/VidhyA789/addDepartment"> Department List</a>
-            </div>
-        </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Bookings
+                    </button>
 
-        </ul>
-        {{!-- <div>
-            <a href="/adminPanel/VidhyA789/getChurch" class="btn btn-danger">Search</a>
-        </div> --}}
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/doctors_bookings">Doctors
+                            Bookings</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/user_bookings">User
+                            Bookings</a>
+                    </div>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        user
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activeUser"> Active Users</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-InactiveUser"> Inactive Users</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Departments
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789//addAyurvedicDepartment">Ayurvedic Department List</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/addGeneralDepartment">General Department List</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Hospitals
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactivehospital"> New Hospitals</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activeHospitals"> Active Hospitals</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringHospital"> Expiring Hospitals</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribedhospitals"> UnSubscribed
+                            Hospitals</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Pharmacy
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactivepharmacy"> New Pharmacy</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activepharmacy"> Active Pharmacy</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringPharmacy"> Expiring Pharmacy</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribedpharmacy"> UnSubscribed
+                            Pharmacy</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Labs
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactivelab"> New Labs</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activelab"> Active Labs</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringLab"> Expiring Labs</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribedlab"> UnSubscribed
+                            Labs</a>
+                    </div>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Home Nurse
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactivenurse"> New Home Nurse</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activenurse"> Active Home Nurse</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringNurce"> Expiring Home Nurse</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribednurse"> UnSubscribed Home
+                            Nurse</a>
+                    </div>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Ambulance
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-inactiveambulance"> New Ambulance</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-activeambulance"> Active Ambulance</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-expiringAmbulance"> Expiring Ambulance</a>
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/view-unSubscribedambulance"> UnSubscribed
+                            Ambulance</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Products
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/adminPanel/VidhyA789/listOfProducts"> Products</a>
+                    </div>
+                </div>
+            </ul>
+            {{!-- <div>
+                <a href="/adminPanel/VidhyA789/getChurch" class="btn btn-danger">Search</a>
+            </div> --}}
         </div>
         <span style="padding-left:30px"></span>
         <form class="form-inline my-2 my-lg-0">

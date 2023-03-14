@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-md-6 m-auto">
+        <div class="container mt-5 pl-5">
+            <h2 class="text-center">Add Product</h2>
+            <form action"/adminPanel/addProducts" method="post" encType="multipart/form-data">
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" name="name" class="form-control" value="" required>
+                    <label for="link">Link</label>
+                    <input type="text" name="link" class="form-control" value="" required>
+                    <label for="details">Details</label>
+                    <input type="text" name="details" class="form-control" value="" required>
+                    <br>
+
+                </div>
+                <div class=col-md-3 p-5>
+                    <b><label for="Image">issue Image</label></b>
+                    <div class="card" style="width: 15rem; height: 15rem">
+                        <b>
+                            <p></p>
+                            <img src="" alt="np found"
+                                style="width:200px; height:200px" id="imgView" class="pt-3 pb-3">
+                            <br>
+                            <p></p>
+                            <br>
+                            <input type="File" name="img" class="form-control" onchange="viewImage(event)" required>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                </div>
+                <button type="submit" class="btn btn-success mt-4"> Add product </button>
+                <br>
+                <br>
+        </div>
+        </form>
+    </div>
+
+</div>
+</div>
+<script>
+    function viewImage(event) {
+        document.getElementById('imgView').src = URL.createObjectURL(event.target.files[0]) //to access new image
+    }
+
+     $("#submit").click(function() {
+      alert("The Item Inserted.");
+   });
+</script>

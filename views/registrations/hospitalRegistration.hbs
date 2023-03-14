@@ -49,7 +49,7 @@
 
 {{#if fmsg }}
 <div class="alert alert-danger" role="alert" onload="goBack()">
-    <h6>{fmsg}</h6>
+    <h6>{{fmsg}}</h6>
 
 </div>
 {{/if}}
@@ -185,7 +185,6 @@
     }
 
     function showPosition(position) {
-        alert("hello")
         document.getElementById("lat").value = position.coords.latitude;
         document.getElementById("lan").value = position.coords.longitude;
         document.getElementById("googleLocation").value = "https://www.google.com/maps/search/?api=1&query=" +

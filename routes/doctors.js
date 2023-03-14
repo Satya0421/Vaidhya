@@ -37,12 +37,12 @@ app.post('/register1', async (req, res) => {
       }
       else {
         var pass = await bcrypt.hash(req.body.password, 08);
-       
+
         var j = 0
         start:
         while (1) {
           var code = Math.floor(1000 + Math.random() * 9000)
-          let num = req.body.name.substring(0, req.body.name.indexOf(' '))+code;
+          let num = req.body.name.substring(0, req.body.name.indexOf(' ')) + code;
           // for (let i = 0; i < 8; i++) {
           //   const randomIndex = Math.floor(Math.random() * chars.length);
           //   num += chars[randomIndex];
@@ -102,7 +102,7 @@ app.post("/verifyPhone", async (req, res) => {
       {
         $set: {
           lvl: "2",
-         code: 0
+          code: 0
         },
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -119,10 +119,10 @@ app.post('/resendCode', async (req, res) => {
   await db.get()
     .collection(collection.DOCTORS)
     .findOne(
-      {  _id: ObjectID(req.body._id) },
+      { _id: ObjectID(req.body._id) },
       async (err, profile) => {
-         fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' One time Verification Code is :' + profile.code  + "\n ",  numbers : [parseInt(profile.phone)]})    
-         return res.status(200).json()
+        fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
+        return res.status(200).json()
       },
     )
 });
@@ -228,7 +228,7 @@ app.post('/forget_password', async (req, res) => {
         if (err) {
           return res.status(500).json({ msg: "Error to process...Try once more" });
         }
-        fast2sms.sendMessage({authorization : process.env.API_KEY , message : ' Greetings From Vaidhya .  One time code to reset your password is ' + code  + "\n ",  numbers : [parseInt(profile.value.phone)]})    
+        fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' Greetings From Vaidhya .  One time code to reset your password is ' + code + "\n ", numbers: [parseInt(profile.value.phone)] })
         return res.status(200).json({ _id: profile.value._id });
         // });
       },
@@ -265,7 +265,7 @@ app.post('/reset-password', async (req, res) => {
       {
         $set: {
           password: pass,
-          
+
         },
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -276,7 +276,7 @@ app.post('/reset-password', async (req, res) => {
     )
 });
 app.get("/subFees", async (req, res) => {
-  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ _id: 0,'doctorsub':1 }).toArray())
+  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ _id: 0, 'doctorsub': 1 }).toArray())
 });
 app.post("/subscription", async (req, res) => {
   await db.get()
@@ -287,8 +287,8 @@ app.post("/subscription", async (req, res) => {
         $set: {
           subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           lvl: "5",
-          referedBy:req.body.referedBy,
-          paymentId:req.body.paymentId
+          referedBy: req.body.referedBy,
+          paymentId: req.body.paymentId
         },
       }, (err, result) => {
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -322,7 +322,7 @@ app.post("/login", async (req, res) => {
             else if (user.lvl == "5") {
               return res.status(403).json({ status: user.status, msg: " Your verification is under proccess , You can enjoy Vaidhya Soon" });
             }
-            else if (user.lvl == "6"&& user.status =="unSubscribe") {
+            else if (user.lvl == "6" && user.status == "unSubscribe") {
               return res.status(403).json({ status: user.status, msg: " Your Subscription plan is over .Contact Vaidhya to extend it" });
             }
             else {
@@ -948,7 +948,7 @@ app.post('/displaySummary', middleware.checkToken, async (req, res) => {
 
 //// ***************Data List***************************///
 app.get('/listofDepartment', async function (req, res) {
-  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1,'ayurvedicDepartment': 1, _id: 0,doctorsub:1 }).toArray())
+  res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1, 'ayurvedicDepartment': 1, _id: 0, doctorsub: 1 }).toArray())
 });
 
 app.get('/listofcities', async function (req, res) {
@@ -1018,7 +1018,7 @@ app.get('/CheckPaymentAccount', middleware.checkToken, async (req, res) => {
   await db.get().collection(collection.BOOKINGS)
     .findOne({ _id: ObjectID(req.decoded._id), "accNo": { $ne: null } })
     .then((result) => {
-      if (result!=null) {
+      if (result != null) {
         res.status(200).json("Activated")
       }
       else {
@@ -1050,7 +1050,7 @@ app.get('/totalpayments', middleware.checkToken, async function (req, res) {
   await db.get().collection(collection.BOOKINGS).findOne({ _id: ObjectID(req.decoded._id) }).then((result) => {
     if (result) {
       //console.log(result)
-      res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests? result.requests.slice(-20):null });
+      res.status(200).json({ _id: result._id, balance: result.balance, grandtotal: result.grandtotal, requests: result.requests ? result.requests.slice(-20) : null });
     }
   })
 });
@@ -1090,10 +1090,14 @@ app.post('/requestPayment', middleware.checkToken, async (req, res) => {
 });
 //// ***************Subscription***************************///
 app.post("/subscriptionExtend", middleware.checkToken, async (req, res) => {
-  var output= await db.get()
-  .collection(collection.DOCTORS)
-  .findOne({_id: ObjectID(req.decoded._id)})
- var newdate= new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  var output = await db.get()
+    .collection(collection.DOCTORS)
+    .findOne({ _id: ObjectID(req.decoded._id) })
+  if (output.subEnddate == "") {
+    var newdate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    var newdate = new Date(output.subEnddate.setFullYear(output.subEnddate.getFullYear() + 1));
+  }
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -1102,42 +1106,41 @@ app.post("/subscriptionExtend", middleware.checkToken, async (req, res) => {
         // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
         $set: {
           subEnddate: newdate,
-          paymentId:req.body.paymentId
+          paymentId: req.body.paymentId
         },
       }, (err, result) => {
-       
+
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
-          return res.status(200).json({ msg: "Suceessfully extended" ,date:newdate});
+          return res.status(200).json({ msg: "Suceessfully extended", date: newdate });
         }
-        else
-        {
+        else {
           return res.status(500).json({ msg: "Error to process...Try once more" });
         }
       },
     )
 
-//  var result =await db.get()
-//     .collection(collection.DOCTORS)
-//     .aggregate([
-//       {
-//         $match: { _id: ObjectID(req.body.id) }
-//       },
-//       {
-//         $project: {
-//           newDateField: {
-//             $add: ["$subEnddate", 365 * 24 * 60 * 60 * 1000]
-//           }
-//         }
-//       },
-//       {
-//         $project: {
-//           newDateField: {
-//             $toDate: "$newDateField"
-//           }
-//         }
-//       }
-//     ]).toArray()
-//     res.json(result[0])
+  //  var result =await db.get()
+  //     .collection(collection.DOCTORS)
+  //     .aggregate([
+  //       {
+  //         $match: { _id: ObjectID(req.body.id) }
+  //       },
+  //       {
+  //         $project: {
+  //           newDateField: {
+  //             $add: ["$subEnddate", 365 * 24 * 60 * 60 * 1000]
+  //           }
+  //         }
+  //       },
+  //       {
+  //         $project: {
+  //           newDateField: {
+  //             $toDate: "$newDateField"
+  //           }
+  //         }
+  //       }
+  //     ]).toArray()
+  //     res.json(result[0])
 });
 module.exports = app;

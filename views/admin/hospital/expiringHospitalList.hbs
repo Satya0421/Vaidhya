@@ -1,0 +1,38 @@
+<section>
+  <div class="container">
+    <h3>{{this.status}}</h3>
+    <br>
+    <br>
+    <table class="table mt-5" id="churchTable">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Sub End</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each data}}
+        <tr>
+          <td>{{this._id}}</td>
+          <td>{{this.name}}</td>
+          <td>{{this.phone}}</td>
+          <td>{{this.subEnddate}}</td>
+          <td> <a href="/adminPanel/VidhyA789/view-hospital/extend/{{this._id}}" class="btn btn-primary"
+              onclick="return confirm('are you want to Extend Hospital')">Extend</a></td>
+          <td> <a href="/adminPanel/VidhyA789/view-hospital/unSubscribe/{{this._id}}" class="btn btn-danger"
+              onclick="return confirm('are you want to UnSubscribe Hospital')">UnSubscribe</a></td>
+          <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  $(function () {
+    $('#churchTable').DataTable();
+  });
+</script>
