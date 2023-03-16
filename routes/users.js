@@ -10,10 +10,10 @@ let middleware = require("../middleware");
 const bcrypt = require('bcryptjs');
 const ObjectID = require("mongodb").ObjectID
 const Razorpay = require('razorpay');
-
+const fast2sms = require('fast-two-sms');
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_r9BjXS8K8XqlTm',
-  key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+    key_id: 'rzp_test_r9BjXS8K8XqlTm',
+    key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
 });
 //// ***************Registration***************************///
 app.post('/register', async (req, res) => {
@@ -27,7 +27,7 @@ app.post('/register', async (req, res) => {
                 return res.status(403).json({ msg: "User Already exist" });
             }
             else {
-
+                var num = Math.floor(1000 + Math.random() * 9000)
                 // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
                 var pass = await bcrypt.hash(req.body.password, 08);
                 await db.get()
@@ -39,20 +39,22 @@ app.post('/register', async (req, res) => {
                             phone: req.body.phone,
                             username: req.body.email,
                             gender: req.body.gender,
-                            code: 1234,
+                            code: num,
                             dob: req.body.dob,
                             status: "inactive"
                         }
                     )
                     .then((result) => {
                         if (result.acknowledged) {
+                            fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + num + "\n ", numbers: [parseInt(req.body.phone)] })
                             return res.status(200).json({ _id: result.insertedId })
-                        }
+                          }
                         else {
                             return res.status(500).json({ msg: "Error to process... Try once more" });
                         }
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.log(error)
                         return res.status(500).json({ msg: "Error to process... Try once more" });
                     });
             }
@@ -83,10 +85,22 @@ app.post("/verifyPhone", async (req, res) => {
             },
         );
 });
+app.post('/resendCode', async (req, res) => {
+    console.log("hello")
+    await db.get()
+        .collection(collection.USERS)
+        .findOne(
+            { _id: ObjectID(req.body._id) },
+            async (err, profile) => {
+                fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
+                return res.status(200).json()
+            },
+        )
+});
 app.post('/forget_password', async (req, res) => {
     // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
     //console.log(req.body)
-    var num = 1234
+    var num = Math.floor(1000 + Math.random() * 9000)
     await db.get()
         .collection(collection.USERS)
         .findOneAndUpdate(
@@ -103,7 +117,7 @@ app.post('/forget_password', async (req, res) => {
                 if (err) {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
                 }
-                //  fast2sms.sendMessage({authorization : process.env.API_KEY , message : 'Greetings From Pilasa .  One time code to reset your password is ' + num  ,  numbers : [parseInt(profile.value.phone)]})
+                fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Greetings From Vaidhya .  One time code to reset your password is ' + num, numbers: [parseInt(profile.value.phone)] })
                 // var mailOption = {
                 //   from: 'pilasa.ae@gmail.com',
                 //   to: req.body.username,
@@ -207,40 +221,40 @@ app.get('/getbanners', middleware.checkToken, async (req, res) => {
     let superImage = await db.get().collection(collection.BANNERCOLLECTION).find().project({ _id: 0 }).toArray();
     res.json(superImage)
 })
-app.post('/change-password', middleware.checkToken, async (req, res) => {
-    await db.get()
-        .collection(collection.USERS)
-        .findOne({ _id: ObjectID(req.decoded._id) }, async (err, user) => {
-            if (user) {
-                await bcrypt.compare(req.body.currpassword, user.password).then(async (status) => {
-                    if (status) {
-                        req.body.newpassword = await bcrypt.hash(req.body.newpassword, 08);
-                        await db.get()
-                            .collection(collection.USERS)
-                            .updateOne(
-                                { _id: ObjectID(req.decoded._id) },
-                                {
-                                    $set: {
-                                        password: req.body.newpassword
-                                    },
-                                }, (err, result) => {
-                                    if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
-                                    if (result.modifiedCount == 1) {
-                                        return res.status(200).json({ msg: "Password Updated Successfully" });
-                                    } else {
-                                        return res.status(500).json({ msg: "Request failed" });
-                                    }
-                                },
-                            )
-                    }
-                    else {
-                        return res.status(403).json({ msg: "Wrong Password" });
-                    }
-                })
-            }
-        })
+// app.post('/change-password', middleware.checkToken, async (req, res) => {
+//     await db.get()
+//         .collection(collection.USERS)
+//         .findOne({ _id: ObjectID(req.decoded._id) }, async (err, user) => {
+//             if (user) {
+//                 await bcrypt.compare(req.body.currpassword, user.password).then(async (status) => {
+//                     if (status) {
+//                         req.body.newpassword = await bcrypt.hash(req.body.newpassword, 08);
+//                         await db.get()
+//                             .collection(collection.USERS)
+//                             .updateOne(
+//                                 { _id: ObjectID(req.decoded._id) },
+//                                 {
+//                                     $set: {
+//                                         password: req.body.newpassword
+//                                     },
+//                                 }, (err, result) => {
+//                                     if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
+//                                     if (result.modifiedCount == 1) {
+//                                         return res.status(200).json({ msg: "Password Updated Successfully" });
+//                                     } else {
+//                                         return res.status(500).json({ msg: "Request failed" });
+//                                     }
+//                                 },
+//                             )
+//                     }
+//                     else {
+//                         return res.status(403).json({ msg: "Wrong Password" });
+//                     }
+//                 })
+//             }
+//         })
 
-});
+// });
 //// ***************list Doctors***************************///
 //   app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
 //         await db.get().collection(collection.BOOKINGS)
@@ -275,50 +289,78 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
 //   });
 app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     // var index = 0;
-    var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
-        {
-            $geoNear: {
-                // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
-                near: { type: "Point", coordinates: [req.body.lng, req.body.lat] },
-                distanceField: "distance",
-                maxDistance: 15000,
-                // query: { category: "Parks" },
-                // includeLocs: "dist.location",
-                spherical: true
-            }
-        },
-        {
-            $match: {
-                $and: [{ department: req.body.department },
-                { category: req.body.category },
-                { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
+    if (req.body.treattype == 1 || req.body.treattype == 4) {
+        var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
+            {
+                $geoNear: {
+                    // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                    near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
+                    distanceField: "distance",
+                    maxDistance: 15000,
+                    // query: { category: "Parks" },
+                    // includeLocs: "dist.location",
+                    spherical: true
+                }
             },
-        },
-        {
-            $project: {
-                _id: 1,
-                department: "$department",
-                address: "$address",
-                name: "$name",
-                appointments: { $slice: ["$appointments", 1] },
-                rating: { $divide: ["$rating", "$totalRating"] },
-            }
-        },
-
-    ]).limit(50).toArray()
+            {
+                $match: {
+                    $and: [{ department: req.body.department },
+                    { category: req.body.category },
+                    { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    department: "$department",
+                    address: "$address",
+                    name: "$name",
+                    appointments: { $slice: ["$appointments", 1] },
+                    rating: { $divide: ["$rating", "$totalRating"] },
+                   
+                }
+            },
+            { $sample: { size: 25 } }
+        ]).toArray()
+        res.json(result2);
+    }
+    else{
+        console.log("hello")
+        var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
+            {
+                $match: {
+                    $and: [{ department: req.body.department },
+                    { category: req.body.category },
+                    { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    department: "$department",
+                    address: "$address",
+                    name: "$name",
+                    appointments: { $slice: ["$appointments", 1] },
+                    rating: { $divide: ["$rating", "$totalRating"] } ,
+                    
+                }
+            },
+            { $sample: { size: 25 } }
+        ]).toArray()
+        res.json(result2);
+    }
     //   var output=result2.filter(eachObj ,i => {
     //     if( eachObj.appointments.date==req.body.date)
     //     {
     //         if()
     //     }
     //   });
-
     //  for(int i=0;i<result2.appointments.length )
     //  {
     //     if()
     //  }
     //console.log(result2)
-    res.json(result2);
+
 });
 app.post('/displayReviews', middleware.checkToken, async function (req, res, next) {
     var response = await db.get().collection(collection.DOCTORSREVIEW).aggregate(
@@ -345,6 +387,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                     treattype: req.body.treattype,
                     fees: req.body.fee,
                     status: "active",
+                    paymentid:req.body.paymentid,
                     phone: req.body.phone,
                     summary: false
                 },
@@ -403,6 +446,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
 });
 app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
     var fees = 0;
+    var paymentid = 0;
     var result = await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
         {
             _id: ObjectID(req.body.doctorid), "appointments.date": req.body.date, "appointments.time": req.body.time,
@@ -416,6 +460,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
         },
     );
     fees = result.value.appointments[0].fees;
+    paymentid =result.value.appointments[0].paymentid;
     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
             $set: { "appointments.$[inds].status": "cancelled" }
@@ -439,7 +484,12 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
                 if (err)
                     return res.status(500).json({ msg: "Error to process...Try once more" });
                 if (result.modifiedCount == 1) {
-
+                    const refund = await razorpay.payments.refund(paymentid, {
+                        amount: fees-20 * 100, // amount in paise
+                        speed: 'optimum',
+                    });
+                    console.log(refund)
+                    return res.status(200).json({ msg: "Cancelled successfully" });
                 }
                 else {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
@@ -567,7 +617,7 @@ app.post('/viewdoctorsAppointment', middleware.checkToken, async (req, res) => {
 
 });
 app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
-    //console.log("hello")
+    console.log("hello")
     var result = await db.get()
         .collection(collection.DOCTORS).aggregate([
             {
@@ -579,9 +629,9 @@ app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
                     name: '$name',
                     qualifications: '$qualifications',
                     specality: '$specality',
-                    googlelocation: '$googlelocation',
+                    location: '$location',
                     address: '$address',
-                    // location: '$location',
+                     location: '$location',
                     experience: '$experience',
                     regNumber: '$regNumber'
                 }
@@ -629,8 +679,9 @@ app.post('/viewdoctors', middleware.checkToken, async (req, res) => {
 //// ***************List Data***************************///
 
 app.get('/listofDepartment', middleware.checkToken, async function (req, res) {
-    res.json(await db.get().collection(collection.LISTOFITEMS).find().sort({ 'departments': -1 }).project({ 'departments': 1, _id: 0 }).toArray())
+    res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ 'generaldepartments': 1, 'ayurvedicDepartment': 1, _id: 0 }).toArray())
 });
+
 app.get('/listofcities', async function (req, res) {
     // //console.log("hai")
     var result = await db.get().collection(collection.LISTOFITEMS).find().project({ cities: 1, _id: 0 }).toArray()
@@ -643,11 +694,11 @@ app.get('/listofcities', async function (req, res) {
 // app.get('/hospitals', async function (req, res) {
 //     res.send(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ Name: 1, _id: 1, phone: 1, address: 1 ,location:1,image: 1 }).toArray())
 // });
-app.post('/hospitalsimage', async function (req, res) {
-    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/hospitalsimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/hospitals', async function (req, res) {
-    res.send(await db.get().collection(collection.HOSPITAL_COLLECTION).aggregate([
+app.post('/hospitals',middleware.checkToken, async function (req, res) {
+   var output= await db.get().collection(collection.HOSPITAL_COLLECTION).aggregate([
         {
             $geoNear: {
                 // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
@@ -667,13 +718,14 @@ app.post('/hospitals', async function (req, res) {
             },
         },
         { $sample: { size: 25 } }
-    ]).project({ image: 0 }).toArray())
+    ]).project({ image: 0 }).toArray()
+    res.send(output)
 });
 
-app.post('/ambulanceimage', async function (req, res) {
-    res.json(await db.get().collection(collection.AMBULANCE_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/ambulanceimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.AMBULANCE_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/ambulance', async function (req, res) {
+app.post('/ambulance',middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.AMBULANCE_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -697,10 +749,10 @@ app.post('/ambulance', async function (req, res) {
     ]).project({ image: 0 }).toArray())
 });
 
-app.post('/nurseimage', async function (req, res) {
-    res.json(await db.get().collection(collection.NURSE_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/nurseimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.NURSE_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/nurce', async function (req, res) {
+app.post('/nurce',middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.NURSE_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -723,10 +775,10 @@ app.post('/nurce', async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/labimage', async function (req, res) {
-    res.json(await db.get().collection(collection.LABS_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/labimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.LABS_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/lab', async function (req, res) {
+app.post('/lab',middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.LABS_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -749,10 +801,10 @@ app.post('/lab', async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/pharmacyimage', async function (req, res) {
-    res.json(await db.get().collection(collection.PHARMACY_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/pharmacyimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.PHARMACY_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/pharmacy', async function (req, res) {
+app.post('/pharmacy',middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.PHARMACY_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -775,10 +827,10 @@ app.post('/pharmacy', async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/productimage', async function (req, res) {
-    res.json(await db.get().collection(collection.PRODUCT_COLLECTION).find({ _id: ObjectID(req.body.hospital_id) }).project({ _id: 0, image: 1 }).toArray())
+app.post('/productimage',middleware.checkToken, async function (req, res) {
+    res.json(await db.get().collection(collection.PRODUCT_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.get('/product', async function (req, res) {
+app.get('/product',middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.PRODUCT_COLLECTION).aggregate([
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
@@ -891,7 +943,7 @@ app.get('/refundGenerate', async function (req, res) {
     const refund = await razorpay.payments.refund('pay_Kj03QXKxsLPxYp', {
         amount: 50000, // amount in paise
         speed: 'optimum',
-      });
-      res.json(refund)
+    });
+    res.json(refund)
 })
 module.exports = app;

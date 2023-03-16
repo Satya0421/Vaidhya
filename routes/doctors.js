@@ -22,6 +22,12 @@ var body_parser = require('body-parser');
 app.use(body_parser.urlencoded({ extended: false }));
 var multer = require('multer');
 const upload = multer();
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+    key_id: 'rzp_test_r9BjXS8K8XqlTm',
+    key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+});
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
@@ -62,14 +68,14 @@ app.post('/register1', async (req, res) => {
                 location: {
                   type: "Point",
                   coordinates: [
-                    parseFloat(req.body.longtitude),
                     parseFloat(req.body.latitude),
+                    parseFloat(req.body.longtitude),
                   ]
                 }
               }
             )
             .then((result) => {
-              console.log(result)
+              // console.log(result)
               if (result.acknowledged) {
                 fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
                 return res.status(200).json({ _id: result.insertedId })
@@ -832,11 +838,12 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
       //  appointments:{treattype: "1"}
     },
     {
-      $set: { "appointments.$[inds].status": "cancelled" }
+      $set: { "appointments.$[inds].status": "cancelled" },
+     
     },
     {
-      "arrayFilters": [{ "inds.date": req.body.date }]
-    },
+      "arrayFilters": [{ "inds.date": req.body.date }],returnOriginal: false
+    }
   ).then(async (result, err) => {
     // console.log(result.value)
     if (result.value.appointments.length > 0) {

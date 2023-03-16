@@ -146,7 +146,8 @@ router.post('/Add-superImage', verifyLogin, async function (req, res, next) {
       await db.get()
         .collection(collection.BANNERCOLLECTION)
         .insertOne({
-          imgName: req.files.Image.name
+          imgName: req.files.Image.name,
+          url:req.body.url
         })
         .then((result) => {
           res.redirect("/adminPanel/VidhyA789/");
@@ -210,7 +211,7 @@ router.get('/view-unSubscribed', verifyLogin, async function (req, res, next) {
   res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
 
 });
-router.get('/view-expiringDoctors',  async function (req, res, next) {
+router.get('/view-expiringDoctors',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Doctors "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,doctors:1}).toArray()
   var data=list[0].doctors
@@ -601,6 +602,7 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
   var status = "Ayurvedic Departments "
   var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
+  console.log(out)
   if (out[0].ayurvedicDepartment != "") {
     var result = out[0].ayurvedicDepartment;
     // //console.log(result)
@@ -613,6 +615,10 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
 });
 router.post('/addAyurvedicDepartment', verifyLogin, async (req, res) => {
   //console.log(req.body.department)
+  var department = [
+    req.body.department,
+    req.body.department,
+  ];
   if (req.body.department == '') {
     res.redirect('back');
   } else {
@@ -621,11 +627,20 @@ router.post('/addAyurvedicDepartment', verifyLogin, async (req, res) => {
         {
           _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
         },
-        {
+         {
           $push: {
-            ayurvedicDepartment: req.body.department
+            ayurvedicDepartment: {
+              $each: department,
+              $sort: { ayurvedicDepartment: 1 },
+              //  $slice: 3
+            }
           }
         },
+        // {
+        //   $push: {
+        //     ayurvedicDepartment: req.body.department
+        //   }
+        // },
       )
     res.redirect('back');
   }
@@ -760,7 +775,7 @@ router.get('/view-hospital/unSubscribe/:_id', verifyLogin, async function (req, 
     })
 
 });
-router.get('/view-expiringHospital',  async function (req, res, next) {
+router.get('/view-expiringHospital',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Hospital "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,hospital:1}).toArray()
   var data=list[0].hospital
@@ -883,7 +898,7 @@ router.get('/view-pharmacy/active/:_id', verifyLogin, async function (req, res, 
     }
     )
 });
-router.get('/view-expiringPharmacy',  async function (req, res, next) {
+router.get('/view-expiringPharmacy',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Pharmacy "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,pharmacy:1}).toArray()
   var data=list[0].pharmacy
@@ -1005,7 +1020,7 @@ router.get('/view-nurse/active/:_id', verifyLogin, async function (req, res, nex
     }
     )
 });
-router.get('/view-expiringNurce',  async function (req, res, next) {
+router.get('/view-expiringNurce',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Nurce "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,nurse:1}).toArray()
   var data=list[0].nurse
@@ -1145,7 +1160,7 @@ router.get('/view-lab/active/:_id', verifyLogin, async function (req, res, next)
 //     })
 
 // });
-router.get('/view-expiringLab',  async function (req, res, next) {
+router.get('/view-expiringLab',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Lab "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,lab:1}).toArray()
   var data=list[0].lab
@@ -1286,7 +1301,7 @@ router.get('/view-ambulance/active/:_id', verifyLogin, async function (req, res,
 //     })
 
 // });
-router.get('/view-expiringAmbulance',  async function (req, res, next) {
+router.get('/view-expiringAmbulance',verifyLogin,  async function (req, res, next) {
   var status = "Expiring Ambulance "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,ambulance:1}).toArray()
   var data=list[0].ambulance
@@ -1366,10 +1381,10 @@ router.get('/listOfProducts', verifyLogin, async function (req, res, next) {
   res.render('admin/products/listOfProducts', { login: true, product, status })
 
 });
-router.get('/addProducts', async (req, res) => {
+router.get('/addProducts',verifyLogin, async (req, res) => {
   res.render('admin/products/addProducts')
 })
-router.post('/addProducts', async (req, res) => {
+router.post('/addProducts',verifyLogin, async (req, res) => {
   var image2 = req?.files?.img
   await image2.mv('./uploads/regImages/' + req.body.name + ".png");
   const image = await fs.readFileSync('./uploads/regImages/' + req.body.name + ".png");
