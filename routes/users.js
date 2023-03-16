@@ -428,6 +428,15 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                         )
                         .then((result) => {
                             if (result.modifiedCount == 1) {
+                                razorpay.payments.capture(paymentId, {
+                                    amount: 100 // amount to be captured, in paisa
+                                  }, (error, payment) => {
+                                    if (error) {
+                                      console.error(error);
+                                    } else {
+                                      console.log(payment);
+                                    }
+                                  });
                                 return res.status(200).json({ msg: "Appointment successful" });
                             }
                         })
@@ -484,11 +493,11 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
                 if (err)
                     return res.status(500).json({ msg: "Error to process...Try once more" });
                 if (result.modifiedCount == 1) {
-                    const refund = await razorpay.payments.refund(paymentid, {
-                        amount: fees-20 * 100, // amount in paise
-                        speed: 'optimum',
-                    });
-                    console.log(refund)
+                    // const refund = await razorpay.payments.refund(paymentid, {
+                    //     amount: fees-20 * 100, // amount in paise
+                    //     speed: 'optimum',
+                    // });
+                    // console.log(refund)
                     return res.status(200).json({ msg: "Cancelled successfully" });
                 }
                 else {
@@ -940,10 +949,23 @@ app.get('/product',middleware.checkToken, async function (req, res) {
 //     )
 // });
 app.get('/refundGenerate', async function (req, res) {
-    const refund = await razorpay.payments.refund('pay_Kj03QXKxsLPxYp', {
-        amount: 50000, // amount in paise
-        speed: 'optimum',
-    });
+    const refund =  razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
+        amount: 20000
+      }, (error, refund) => {
+        if (error) {
+            console.log("Hello")
+          console.error(error);
+        } else {
+          console.log(refund);
+        }
+      });
+    // const refund = await razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
+    //     amount: 180, // amount in paise
+    //     speed: 'optimum',
+    // }) .catch((error) => {
+    //     console.log(error)
+    //     return res.status(500).json({ msg: "Error to process... Try once more" });
+    // });
     res.json(refund)
 })
 module.exports = app;
