@@ -48,7 +48,7 @@ app.post('/register', async (req, res) => {
                         if (result.acknowledged) {
                             fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + num + "\n ", numbers: [parseInt(req.body.phone)] })
                             return res.status(200).json({ _id: result.insertedId })
-                          }
+                        }
                         else {
                             return res.status(500).json({ msg: "Error to process... Try once more" });
                         }
@@ -317,14 +317,14 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                     name: "$name",
                     appointments: { $slice: ["$appointments", 1] },
                     rating: { $divide: ["$rating", "$totalRating"] },
-                   
+
                 }
             },
             { $sample: { size: 25 } }
         ]).toArray()
         res.json(result2);
     }
-    else{
+    else {
         console.log("hello")
         var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
             {
@@ -341,8 +341,8 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                     address: "$address",
                     name: "$name",
                     appointments: { $slice: ["$appointments", 1] },
-                    rating: { $divide: ["$rating", "$totalRating"] } ,
-                    
+                    rating: { $divide: ["$rating", "$totalRating"] },
+
                 }
             },
             { $sample: { size: 25 } }
@@ -387,7 +387,7 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                     treattype: req.body.treattype,
                     fees: req.body.fee,
                     status: "active",
-                    paymentid:req.body.paymentid,
+                    paymentid: req.body.paymentid,
                     phone: req.body.phone,
                     summary: false
                 },
@@ -428,15 +428,14 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                         )
                         .then((result) => {
                             if (result.modifiedCount == 1) {
-                                razorpay.payments.capture(req.body.paymentid, {
-                                    amount: req.body.fee * 100 // amount to be captured, in paisa
-                                  }, (error, payment) => {
-                                    if (error) {
-                                      console.error(error);
-                                    } else {
-                                      console.log(payment);
-                                    }
-                                  });
+                                razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee*100))
+                                    .then(function (response) {
+                                        res.send(response);
+                                    })
+                                    .catch(function (err) {
+                                        console.error(err);
+                                        res.status(500).send(err);
+                                    });
                                 return res.status(200).json({ msg: "Appointment successful" });
                             }
                         })
@@ -469,7 +468,7 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
         },
     );
     fees = result.value.appointments[0].fees;
-    paymentid =result.value.appointments[0].paymentid;
+    paymentid = result.value.appointments[0].paymentid;
     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
         {
             $set: { "appointments.$[inds].status": "cancelled" }
@@ -640,7 +639,7 @@ app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
                     specality: '$specality',
                     location: '$location',
                     address: '$address',
-                     location: '$location',
+                    location: '$location',
                     experience: '$experience',
                     regNumber: '$regNumber'
                 }
@@ -703,11 +702,11 @@ app.get('/listofcities', async function (req, res) {
 // app.get('/hospitals', async function (req, res) {
 //     res.send(await db.get().collection(collection.HOSPITAL_COLLECTION).find().project({ Name: 1, _id: 1, phone: 1, address: 1 ,location:1,image: 1 }).toArray())
 // });
-app.post('/hospitalsimage',middleware.checkToken, async function (req, res) {
+app.post('/hospitalsimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.HOSPITAL_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/hospitals',middleware.checkToken, async function (req, res) {
-   var output= await db.get().collection(collection.HOSPITAL_COLLECTION).aggregate([
+app.post('/hospitals', middleware.checkToken, async function (req, res) {
+    var output = await db.get().collection(collection.HOSPITAL_COLLECTION).aggregate([
         {
             $geoNear: {
                 // near: { type: "Point", coordinates: [req.body.lat, req.body.lng] },
@@ -731,10 +730,10 @@ app.post('/hospitals',middleware.checkToken, async function (req, res) {
     res.send(output)
 });
 
-app.post('/ambulanceimage',middleware.checkToken, async function (req, res) {
+app.post('/ambulanceimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.AMBULANCE_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/ambulance',middleware.checkToken, async function (req, res) {
+app.post('/ambulance', middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.AMBULANCE_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -758,10 +757,10 @@ app.post('/ambulance',middleware.checkToken, async function (req, res) {
     ]).project({ image: 0 }).toArray())
 });
 
-app.post('/nurseimage',middleware.checkToken, async function (req, res) {
+app.post('/nurseimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.NURSE_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/nurce',middleware.checkToken, async function (req, res) {
+app.post('/nurce', middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.NURSE_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -784,10 +783,10 @@ app.post('/nurce',middleware.checkToken, async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/labimage',middleware.checkToken, async function (req, res) {
+app.post('/labimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.LABS_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/lab',middleware.checkToken, async function (req, res) {
+app.post('/lab', middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.LABS_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -810,10 +809,10 @@ app.post('/lab',middleware.checkToken, async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/pharmacyimage',middleware.checkToken, async function (req, res) {
+app.post('/pharmacyimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.PHARMACY_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.post('/pharmacy',middleware.checkToken, async function (req, res) {
+app.post('/pharmacy', middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.PHARMACY_COLLECTION).aggregate([
         {
             $geoNear: {
@@ -836,10 +835,10 @@ app.post('/pharmacy',middleware.checkToken, async function (req, res) {
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
 });
-app.post('/productimage',middleware.checkToken, async function (req, res) {
+app.post('/productimage', middleware.checkToken, async function (req, res) {
     res.json(await db.get().collection(collection.PRODUCT_COLLECTION).find({ _id: ObjectID(req.body.id) }).project({ _id: 0, image: 1 }).toArray())
 });
-app.get('/product',middleware.checkToken, async function (req, res) {
+app.get('/product', middleware.checkToken, async function (req, res) {
     res.send(await db.get().collection(collection.PRODUCT_COLLECTION).aggregate([
         { $sample: { size: 15 } }
     ]).project({ image: 0 }).toArray())
@@ -949,16 +948,17 @@ app.get('/product',middleware.checkToken, async function (req, res) {
 //     )
 // });
 app.get('/refundGenerate', async function (req, res) {
-    const refund =  razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
+    const refund = razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
         amount: 20000
-      }, (error, refund) => {
+    }, (error, refund) => {
         if (error) {
             console.log("Hello")
-          console.error(error);
+            console.error(error);
         } else {
-          console.log(refund);
+            console.log(refund);
         }
-      });
+    });
+
     // const refund = await razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
     //     amount: 180, // amount in paise
     //     speed: 'optimum',
@@ -967,5 +967,29 @@ app.get('/refundGenerate', async function (req, res) {
     //     return res.status(500).json({ msg: "Error to process... Try once more" });
     // });
     res.json(refund)
+})
+app.get('/capturePayment', async function (req, res) {
+    const paymentId = 'pay_LS9LOblpZV3j5b';
+    const amountInPaise = 20000;
+    // razorpay.payments.capture(paymentId, {
+    //     amount: amountInPaise // amount to be captured, in paisa
+    // }, (error, payment) => {
+    //     if (error) {
+    //         console.error(error);
+    //         res.json(error)
+    //     } else {
+    //         console.log(payment);
+    //         res.json(payment)
+    //     }
+    // });
+    razorpay.payments.capture(paymentId, parseInt(amountInPaise))
+        .then(function (response) {
+            res.send(response);
+        })
+        .catch(function (err) {
+            console.error(err);
+            res.status(500).send(err);
+        });
+
 })
 module.exports = app;
