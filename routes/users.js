@@ -428,8 +428,8 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                         )
                         .then((result) => {
                             if (result.modifiedCount == 1) {
-                                razorpay.payments.capture(paymentId, {
-                                    amount: 100 // amount to be captured, in paisa
+                                razorpay.payments.capture(req.body.paymentid, {
+                                    amount: req.body.fee * 100 // amount to be captured, in paisa
                                   }, (error, payment) => {
                                     if (error) {
                                       console.error(error);
