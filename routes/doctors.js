@@ -929,7 +929,7 @@ app.post('/addSummary', middleware.checkToken, async (req, res) => {
 }
 );
 
-app.post('/displaySummary', middleware.checkToken, async (req, res) => {
+app.post('/displaySummary', async (req, res) => {
   var result1 = await db.get().collection(collection.USERSAPPOINTMENT).aggregate([
     {
       $match: { _id: ObjectID(req.body.patientid) }
