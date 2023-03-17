@@ -306,6 +306,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                 $match: {
                     $and: [{ department: req.body.department },
                     { category: req.body.category },
+                    {status:"Active"},
                     { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
                 },
             },
@@ -325,12 +326,13 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
         res.json(result2);
     }
     else {
-        console.log("hello")
+       
         var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
             {
                 $match: {
                     $and: [{ department: req.body.department },
                     { category: req.body.category },
+                    {status:"Active"},
                     { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
                 },
             },
@@ -430,11 +432,11 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                             if (result.modifiedCount == 1) {
                                 razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee*100))
                                     .then(function (response) {
-                                        res.send(response);
+                                        // console.log(response);
                                     })
                                     .catch(function (err) {
-                                        console.error(err);
-                                        res.status(500).send(err);
+                                        // console.error(err);
+                                       
                                     });
                                 return res.status(200).json({ msg: "Appointment successful" });
                             }

@@ -257,6 +257,7 @@ router.get('/view-doctors/active/:_id', verifyLogin, async function (req, res, n
           totalRating: 0,
           balance: 0,
           grandtotal: 0,
+          status:"Active",
           doorStep: "0",
           inClinic: "0",
           onCall: "0",
@@ -301,6 +302,16 @@ router.get('/view-doctors/unSubscribe/:_id', verifyLogin, async function (req, r
       }
     }).then(async (result) => {
       res.redirect('back');
+      db.get().collection(collection.BOOKINGS)
+        .updateOne(
+          { _id: ObjectID(req.params._id) },
+          {
+            // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+            $set: {
+              status:"unSubscribe",
+            },
+          }
+        )
       await db.get().collection(collection.EXPIRING_COLLECTION)
         .updateOne(
           {
@@ -313,6 +324,7 @@ router.get('/view-doctors/unSubscribe/:_id', verifyLogin, async function (req, r
             }
           },
         )
+
     })
 
 });
@@ -347,6 +359,16 @@ router.get('/view-doctors/extend/:_id', verifyLogin, async function (req, res, n
               }
             }
           },
+        ) 
+        db.get().collection(collection.BOOKINGS)
+        .updateOne(
+          { _id: ObjectID(req.params._id) },
+          {
+            // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+            $set: {
+              status:"Active",
+            },
+          }
         ) 
         res.redirect('back');
       },
@@ -602,7 +624,6 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
   var status = "Ayurvedic Departments "
   var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
-  console.log(out)
   if (out[0].ayurvedicDepartment != "") {
     var result = out[0].ayurvedicDepartment;
     // //console.log(result)
@@ -613,12 +634,9 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
   }
 
 });
-router.post('/addAyurvedicDepartment', verifyLogin, async (req, res) => {
+router.post('/addAyurvedicDepartment', async (req, res) => {
   //console.log(req.body.department)
-  var department = [
-    req.body.department,
-    req.body.department,
-  ];
+  
   if (req.body.department == '') {
     res.redirect('back');
   } else {
@@ -627,15 +645,9 @@ router.post('/addAyurvedicDepartment', verifyLogin, async (req, res) => {
         {
           _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
         },
-         {
-          $push: {
-            ayurvedicDepartment: {
-              $each: department,
-              $sort: { ayurvedicDepartment: 1 },
-              //  $slice: 3
-            }
-          }
-        },
+        { $push: { ayurvedicDepartment: { $each: [ req.body.department], $sort: 1 } } }
+        // { $push: { ayurvedicDepartment: req.body.department }, $sort: { ayurvedicDepartment: 1 } }
+        
         // {
         //   $push: {
         //     ayurvedicDepartment: req.body.department
@@ -685,11 +697,12 @@ router.post('/addGeneralDepartment', verifyLogin, async (req, res) => {
         {
           _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
         },
-        {
-          $push: {
-            generaldepartments: req.body.department
-          }
-        },
+        { $push: { generaldepartments: { $each: [ req.body.department], $sort: 1 } } }
+        // {
+        //   $push: {
+        //     generaldepartments: req.body.department
+        //   }
+        // },
       )
     res.redirect('back');
   }
