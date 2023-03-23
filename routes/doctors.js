@@ -198,8 +198,7 @@ app.patch("/upload_profile_image/:_id", async (req, res) => {
   image.mv('./uploads/DoctorsImage/' + req.params._id + ".jpg")
   return res.status(200).json();
 });
-app.post("/upload_DoctorsIdProof/:_id", async (req, res) => {
-
+app.patch("/upload_DoctorsIdProof/:_id", async (req, res) => {
   let image = req.files.img
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
   return res.status(200).json();
