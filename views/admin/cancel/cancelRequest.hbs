@@ -1,0 +1,41 @@
+<section>
+  <div class="container" >
+    <h3>{{this.status}}</h3>
+    {{!-- <br> --}}
+    <table class="table mt-5" id="churchTable" style="padding: 0%;">
+      <thead>
+        <tr>
+          <th scope="col">name</th>
+          <th scope="col">phone</th>
+          <th scope="col">Date</th>
+           <th scope="col">Reason</th>
+           <th scope="col">payment ID</th>
+             <th scope="col">Status</th>
+          <th scope="col">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each requests}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.phone}}</td>
+          <td>{{this.date}}</td>  
+           <td>{{this.reason}}</td><br>
+           <td>{{this.paymentId}}</td>
+          <td>{{this.status}}</td>
+          <td><a href="/adminPanel/VidhyA789/approveCancelRequest/{{this._id}}/{{this.date}}/{{this.time}}/{{this.doctorid}}/{{this.raisedBy}}"
+              class="btn btn-primary">Approve</a>
+          <td><a href="/adminPanel/VidhyA789/rejectCancelRequest/{{this._id}}/{{this.date}}/{{this.time}}/{{this.doctorid}}/{{this.patientid}}/{{this.raisedBy}}"
+              class="btn btn-danger">Reject</a>
+            <!-- send the value use query-->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  $(function () {
+    $('#churchTable').DataTable({ordering: false});
+  });
+</script>

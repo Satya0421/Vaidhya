@@ -25,8 +25,8 @@ const upload = multer();
 const Razorpay = require('razorpay');
 
 const razorpay = new Razorpay({
-    key_id: 'rzp_test_r9BjXS8K8XqlTm',
-    key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+  key_id: 'rzp_test_r9BjXS8K8XqlTm',
+  key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
 });
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
@@ -297,6 +297,7 @@ app.post("/subscription", async (req, res) => {
           paymentId: req.body.paymentId
         },
       }, (err, result) => {
+        razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
           return res.status(200).json({ msg: "Suceessfully Subscribed" });
@@ -427,6 +428,7 @@ app.get('/dashboard', middleware.checkToken, async (req, res) => {
         $project: {
           _id: '$_id',
           name: '$name',
+          phone: '$phone',
           qualifications: '$qualifications',
           specality: '$specality',
           // googlelocation: '$googlelocation',
@@ -565,7 +567,7 @@ app.post('/copydailyAppointments', middleware.checkToken, async (req, res) => {
         }
       },
     ]).toArray();
-  console.log(result2)
+  // (rconsole.logesult2)
   if (result2[0].appointments) {
 
     await db.get().collection(collection.BOOKINGS).updateOne({ _id: ObjectID(req.decoded._id) },
@@ -782,54 +784,103 @@ app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
   });
 });
 app.post('/cancelBookedAppointment', middleware.checkToken, async (req, res) => {
-  await db.get().collection(req.body.date.substring(3)).updateOne(
-    {
-      _id: ObjectID(req.decoded._id)
-    },
-    {
-      $set: { "appointments.$[inds].status": "cancelled" }
-    },
-    {
-      "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
-    },
+  // await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
+  //   { _id: ObjectID(req.decoded._id), appointments: { $elemMatch: { date: req.body.date, time: req.body.time } } },
+  //    { $set: { "appointments.$.status": "Raised" } },
+  //   { projection: { "appointments.$": 1 }, returnOriginal: false }
+  // ).then(async (result, err) => {console.log(result.value.appointments[0])
+  // res.send()
+  // })
+  await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
+    { _id: ObjectID(req.decoded._id), appointments: { $elemMatch: { date: req.body.date, time: req.body.time } } },
+    { $set: { "appointments.$.status": "Raised" } },
+    { projection: { "appointments.$": 1 }, returnOriginal: false }
   ).then(async (result, err) => {
-    if (result.modifiedCount == 1) {
-      await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.body.patientid) },
-        {
-          $set: { "appointments.$[inds].status": "cancelled" }
-        },
-        {
-          "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
-        },
-      ).then(async (result, err) => {
-        if (result.modifiedCount == 1) {
-          await db.get()
-            .collection(collection.BOOKINGS)
-            .updateOne({
-              _id: ObjectID(req.decoded._id),
-            },
-              {
-                $inc: { balance: - req.body.fee }
-              },
-            )
-            .then((result) => {
-              if (result.modifiedCount == 1) {
-                return res.status(200).json({ msg: "Appointment Cancelled successful" });
-              }
-            })
-          // return res.status(200).json({ msg: "Appointment cancelled successful" });
-        } else
-          return res.status(500).json({ msg: "Error to process...Try once more" });
-      })
-    }
-    else
-      return res.status(500).json({ msg: "Error to process...Try once more" });
-  })
+    if (result.ok == 1) {
+      await db.get()
+        .collection(collection.CANCELCOLLECTION)
+        .insertOne(
+          {
+            name: req.body.name,
+            phone: req.body.phone,
+            patientname: result.value.appointments[0].patientname,
+            patientid:result.value.appointments[0].patientid,
+            doctorid:ObjectID(req.decoded._id),
+            date:result.value.appointments[0].date,
+            time:result.value.appointments[0].time,
+            paymentId: result.value.appointments[0].paymentid,
+            reason: req.body.reason,
+            raisedBy:"dr",
+            status: "Raised"
+          }
+        )
+        .then((result) => {
+          // console.log(result)
+          if (result.acknowledged) {
+            return res.status(200).json({ msg: "Cancel Request Generated successful" });
+            // return res.status(200).json({ msg: "Appointment cancelled successful" });
+          } else
+            return res.status(500).json({ msg: "Error to process...Try once more" });
+        })
 
-    .catch(() => {
+        .catch(() => {
+          return res.status(500).json({ msg: "Error to process...Try once more" });
+        })
+    }
+    else {
       return res.status(500).json({ msg: "Error to process...Try once more" });
-    })
+    }
+  });
 });
+// app.post('/cancelBookedAppointment', middleware.checkToken, async (req, res) => {
+//   await db.get().collection(req.body.date.substring(3)).updateOne(
+//     {
+//       _id: ObjectID(req.decoded._id)
+//     },
+//     {
+//       $set: { "appointments.$[inds].status": "cancelled" }
+//     },
+//     {
+//       "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+//     },
+//   ).then(async (result, err) => {
+//     if (result.modifiedCount == 1) {
+//       await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.body.patientid) },
+//         {
+//           $set: { "appointments.$[inds].status": "cancelled" }
+//         },
+//         {
+//           "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+//         },
+//       ).then(async (result, err) => {
+//         if (result.modifiedCount == 1) {
+//           await db.get()
+//             .collection(collection.BOOKINGS)
+//             .updateOne({
+//               _id: ObjectID(req.decoded._id),
+//             },
+//               {
+//                 $inc: { balance: - req.body.fee }
+//               },
+//             )
+//             .then((result) => {
+//               if (result.modifiedCount == 1) {
+//                 return res.status(200).json({ msg: "Appointment Cancelled successful" });
+//               }
+//             })
+//           // return res.status(200).json({ msg: "Appointment cancelled successful" });
+//         } else
+//           return res.status(500).json({ msg: "Error to process...Try once more" });
+//       })
+//     }
+//     else
+//       return res.status(500).json({ msg: "Error to process...Try once more" });
+//   })
+
+//     .catch(() => {
+//       return res.status(500).json({ msg: "Error to process...Try once more" });
+//     })
+// });
 app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
 
   await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
@@ -839,10 +890,10 @@ app.post('/cancelAllAppointment', middleware.checkToken, async (req, res) => {
     },
     {
       $set: { "appointments.$[inds].status": "cancelled" },
-     
+
     },
     {
-      "arrayFilters": [{ "inds.date": req.body.date }],returnOriginal: false
+      "arrayFilters": [{ "inds.date": req.body.date }], returnOriginal: false
     }
   ).then(async (result, err) => {
     // console.log(result.value)
@@ -1119,6 +1170,7 @@ app.post("/subscriptionExtend", middleware.checkToken, async (req, res) => {
 
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
+          razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
           return res.status(200).json({ msg: "Suceessfully extended", date: newdate });
         }
         else {

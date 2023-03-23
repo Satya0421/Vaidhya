@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
                         }
                     })
                     .catch((error) => {
-                        console.log(error)
+                        // console.log(error)
                         return res.status(500).json({ msg: "Error to process... Try once more" });
                     });
             }
@@ -306,7 +306,7 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                 $match: {
                     $and: [{ department: req.body.department },
                     { category: req.body.category },
-                    {status:"Active"},
+                    { status: "Active" },
                     { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
                 },
             },
@@ -326,13 +326,13 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
         res.json(result2);
     }
     else {
-       
+
         var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
             {
                 $match: {
                     $and: [{ department: req.body.department },
                     { category: req.body.category },
-                    {status:"Active"},
+                    { status: "Active" },
                     { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
                 },
             },
@@ -430,13 +430,13 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                         )
                         .then((result) => {
                             if (result.modifiedCount == 1) {
-                                razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee*100))
+                                razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee * 100))
                                     .then(function (response) {
                                         // console.log(response);
                                     })
                                     .catch(function (err) {
                                         // console.error(err);
-                                       
+
                                     });
                                 return res.status(200).json({ msg: "Appointment successful" });
                             }
@@ -455,62 +455,113 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
 
 });
 app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
-    var fees = 0;
-    var paymentid = 0;
-    var result = await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
-        {
-            _id: ObjectID(req.body.doctorid), "appointments.date": req.body.date, "appointments.time": req.body.time,
-        },
-        {
-            $set: { "appointments.$[inds].status": "cancelled" }
-        },
-        {
-            arrayFilters: [{ "inds.date": req.body.date, "inds.time": req.body.time, "inds.patientid": ObjectID(req.decoded._id) }],
-            projection: { "appointments.$": 1 }
-        },
-    );
-    fees = result.value.appointments[0].fees;
-    paymentid = result.value.appointments[0].paymentid;
-    await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
-        {
-            $set: { "appointments.$[inds].status": "cancelled" }
-        },
-        {
-            "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
-        },
-    ).then(async (result, err) => {
-        if (result.modifiedCount == 1) {
-            await db.get().collection(collection.BOOKINGS).updateOne(
-                {
-                    _id: ObjectID(req.body.doctorid)
-                },
-                {
-                    $push: { appointments: { time: req.body.time, date: req.body.date, treattype: req.body.treattype } },
-                    $inc: { balance: - fees }
-                }
+    await db.get().collection(req.body.date.substring(3)).findOne({
+        _id: ObjectID(req.body.doctorid),
+        appointments: { $elemMatch: { date: req.body.date, time: req.body.time } }
+    }, {
+        projection: { "appointments.$": 1 }
+        , returnOriginal: false
+    }).then(async (result, err) => {
+        if (result) {
+            await db.get()
+                .collection(collection.CANCELCOLLECTION)
+                .insertOne(
+                    {
+                        name: req.body.name,
+                        phone: req.body.phone,
+                        patientname: result.appointments[0].patientname,
+                        patientid: ObjectID(req.decoded._id),
+                        doctorid: ObjectID(req.body.doctorid),
+                        date: result.appointments[0].date,
+                        time: result.appointments[0].time,
+                        paymentId: result.appointments[0].paymentid,
+                        reason: req.body.reason,
+                        raisedBy: "user",
+                        status: "Raised"
+                    }
+                )
+                .then(async (result) => {
+                    if (result.acknowledged) {
+                        await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
+                            {
+                                $set: { "appointments.$[inds].status": "Raised" }
+                            },
+                            {
+                                "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+                            },
+                        )
+                        return res.status(200).json({ msg: "Cancel Request Generated successful" });
+                        // return res.status(200).json({ msg: "Appointment cancelled successful" });
+                    } else
+                        return res.status(500).json({ msg: "Error to process...Try once more" });
+                })
 
-            ).then(async (result, err) => {
-                // //console.log(result)
-                if (err)
+                .catch(() => {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
-                if (result.modifiedCount == 1) {
-                    // const refund = await razorpay.payments.refund(paymentid, {
-                    //     amount: fees-20 * 100, // amount in paise
-                    //     speed: 'optimum',
-                    // });
-                    // console.log(refund)
-                    return res.status(200).json({ msg: "Cancelled successfully" });
-                }
-                else {
-                    return res.status(500).json({ msg: "Error to process...Try once more" });
-                }
-            });
+                })
         }
         else {
             return res.status(500).json({ msg: "Error to process...Try once more" });
         }
     });
 })
+// app.post('/cancelAppointment', middleware.checkToken, async (req, res) => {
+//     var fees = 0;
+//     var paymentid = 0;
+//     var result = await db.get().collection(req.body.date.substring(3)).findOneAndUpdate(
+//         {
+//             _id: ObjectID(req.body.doctorid), "appointments.date": req.body.date, "appointments.time": req.body.time,
+//         },
+//         {
+//             $set: { "appointments.$[inds].status": "cancelled" }
+//         },
+//         {
+//             arrayFilters: [{ "inds.date": req.body.date, "inds.time": req.body.time, "inds.patientid": ObjectID(req.decoded._id) }],
+//             projection: { "appointments.$": 1 }
+//         },
+//     );
+//     fees = result.value.appointments[0].fees;
+//     paymentid = result.value.appointments[0].paymentid;
+//     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
+//         {
+//             $set: { "appointments.$[inds].status": "cancelled" }
+//         },
+//         {
+//             "arrayFilters": [{ "inds.date": req.body.date, "inds.time": req.body.time }]
+//         },
+//     ).then(async (result, err) => {
+//         if (result.modifiedCount == 1) {
+//             await db.get().collection(collection.BOOKINGS).updateOne(
+//                 {
+//                     _id: ObjectID(req.body.doctorid)
+//                 },
+//                 {
+//                     $push: { appointments: { time: req.body.time, date: req.body.date, treattype: req.body.treattype } },
+//                     $inc: { balance: - fees }
+//                 }
+
+//             ).then(async (result, err) => {
+//                 // //console.log(result)
+//                 if (err)
+//                     return res.status(500).json({ msg: "Error to process...Try once more" });
+//                 if (result.modifiedCount == 1) {
+//                     // const refund = await razorpay.payments.refund(paymentid, {
+//                     //     amount: fees-20 * 100, // amount in paise
+//                     //     speed: 'optimum',
+//                     // });
+//                     // console.log(refund)
+//                     return res.status(200).json({ msg: "Cancelled successfully" });
+//                 }
+//                 else {
+//                     return res.status(500).json({ msg: "Error to process...Try once more" });
+//                 }
+//             });
+//         }
+//         else {
+//             return res.status(500).json({ msg: "Error to process...Try once more" });
+//         }
+//     });
+// })
 
 app.post('/review', middleware.checkToken, async (req, res) => {
     await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(req.decoded._id) },
@@ -627,7 +678,7 @@ app.post('/viewdoctorsAppointment', middleware.checkToken, async (req, res) => {
 
 });
 app.post('/viewDrprofile', middleware.checkToken, async (req, res) => {
-    console.log("hello")
+    // console.log("hello")
     var result = await db.get()
         .collection(collection.DOCTORS).aggregate([
             {
@@ -949,49 +1000,49 @@ app.get('/product', middleware.checkToken, async function (req, res) {
 
 //     )
 // });
-app.get('/refundGenerate', async function (req, res) {
-    const refund = razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
-        amount: 20000
-    }, (error, refund) => {
-        if (error) {
-            console.log("Hello")
-            console.error(error);
-        } else {
-            console.log(refund);
-        }
-    });
+// app.get('/refundGenerate', async function (req, res) {
+//     const refund = razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
+//         amount: 20000
+//     }, (error, refund) => {
+//         if (error) {
+//             console.log("Hello")
+//             console.error(error);
+//         } else {
+//             console.log(refund);
+//         }
+//     });
 
-    // const refund = await razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
-    //     amount: 180, // amount in paise
-    //     speed: 'optimum',
-    // }) .catch((error) => {
-    //     console.log(error)
-    //     return res.status(500).json({ msg: "Error to process... Try once more" });
-    // });
-    res.json(refund)
-})
-app.get('/capturePayment', async function (req, res) {
-    const paymentId = 'pay_LS9LOblpZV3j5b';
-    const amountInPaise = 20000;
-    // razorpay.payments.capture(paymentId, {
-    //     amount: amountInPaise // amount to be captured, in paisa
-    // }, (error, payment) => {
-    //     if (error) {
-    //         console.error(error);
-    //         res.json(error)
-    //     } else {
-    //         console.log(payment);
-    //         res.json(payment)
-    //     }
-    // });
-    razorpay.payments.capture(paymentId, parseInt(amountInPaise))
-        .then(function (response) {
-            res.send(response);
-        })
-        .catch(function (err) {
-            console.error(err);
-            res.status(500).send(err);
-        });
+//     // const refund = await razorpay.payments.refund('pay_LS4C8HbgpJbAvi', {
+//     //     amount: 180, // amount in paise
+//     //     speed: 'optimum',
+//     // }) .catch((error) => {
+//     //     console.log(error)
+//     //     return res.status(500).json({ msg: "Error to process... Try once more" });
+//     // });
+//     res.json(refund)
+// })
+// app.get('/capturePayment', async function (req, res) {
+//     const paymentId = 'pay_LS9LOblpZV3j5b';
+//     const amountInPaise = 20000;
+//     // razorpay.payments.capture(paymentId, {
+//     //     amount: amountInPaise // amount to be captured, in paisa
+//     // }, (error, payment) => {
+//     //     if (error) {
+//     //         console.error(error);
+//     //         res.json(error)
+//     //     } else {
+//     //         console.log(payment);
+//     //         res.json(payment)
+//     //     }
+//     // });
+//     razorpay.payments.capture(paymentId, parseInt(amountInPaise))
+//         .then(function (response) {
+//             res.send(response);
+//         })
+//         .catch(function (err) {
+//             console.error(err);
+//             res.status(500).send(err);
+//         });
 
-})
+// })
 module.exports = app;

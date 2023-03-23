@@ -17,4 +17,5 @@ module.exports={
     AMBULANCE_COLLECTION:'ambulance',
     PRODUCT_COLLECTION:'product',
     EXPIRING_COLLECTION:'expiring',
+    CANCELCOLLECTION:'cancelCollection'
 }

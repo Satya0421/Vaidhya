@@ -60,7 +60,8 @@ app.route("/").get((req, res) =>
   res.render("website"));
 app.route("/termsAndConditions").get((req, res) =>
   res.render("terms"));
-
+app.route("/DrtermsAndConditions").get((req, res) =>
+  res.render("drterms"));
 //   app.get('/deleteDaily', async (req, res) => {
 //     var date= new Date();
 //    var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();

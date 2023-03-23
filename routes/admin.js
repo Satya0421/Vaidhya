@@ -147,7 +147,7 @@ router.post('/Add-superImage', verifyLogin, async function (req, res, next) {
         .collection(collection.BANNERCOLLECTION)
         .insertOne({
           imgName: req.files.Image.name,
-          url:req.body.url
+          url: req.body.url
         })
         .then((result) => {
           res.redirect("/adminPanel/VidhyA789/");
@@ -211,11 +211,11 @@ router.get('/view-unSubscribed', verifyLogin, async function (req, res, next) {
   res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
 
 });
-router.get('/view-expiringDoctors',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringDoctors', verifyLogin, async function (req, res, next) {
   var status = "Expiring Doctors "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,doctors:1}).toArray()
-  var data=list[0].doctors
-  
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, doctors: 1 }).toArray()
+  var data = list[0].doctors
+
   res.render('admin/doctors/expiringDoctorList', { login: true, data, status })
 
 });
@@ -257,7 +257,7 @@ router.get('/view-doctors/active/:_id', verifyLogin, async function (req, res, n
           totalRating: 0,
           balance: 0,
           grandtotal: 0,
-          status:"Active",
+          status: "Active",
           doorStep: "0",
           inClinic: "0",
           onCall: "0",
@@ -308,7 +308,7 @@ router.get('/view-doctors/unSubscribe/:_id', verifyLogin, async function (req, r
           {
             // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
             $set: {
-              status:"unSubscribe",
+              status: "unSubscribe",
             },
           }
         )
@@ -347,29 +347,29 @@ router.get('/view-doctors/extend/:_id', verifyLogin, async function (req, res, n
           subEnddate: newdate,
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              doctors: {
-                _id: ObjectID(req.params._id),
-              }
-            }
-          },
-        ) 
-        db.get().collection(collection.BOOKINGS)
-        .updateOne(
-          { _id: ObjectID(req.params._id) },
-          {
-            // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
-            $set: {
-              status:"Active",
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
             },
-          }
-        ) 
+            {
+              $pull: {
+                doctors: {
+                  _id: ObjectID(req.params._id),
+                }
+              }
+            },
+          )
+        db.get().collection(collection.BOOKINGS)
+          .updateOne(
+            { _id: ObjectID(req.params._id) },
+            {
+              // $add: ["subEnddate", 365 * 24 * 60 * 60 * 1000],
+              $set: {
+                status: "Active",
+              },
+            }
+          )
         res.redirect('back');
       },
     )
@@ -447,7 +447,7 @@ router.get('/viewPayment/:_id/:reqid/:amt', verifyLogin, async (req, res) => {
     }
   ]).toArray();
   var result = requests[0];
-  
+
   res.render('admin/payment/viewPayment', { login: true, result })
 });
 router.post('/viewPayment/:_id/:reqid/:amt', async (req, res) => {
@@ -559,6 +559,128 @@ router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
 //   }, {$sort: {cities: 1}},)
 //   // res.render('admin/admin-home', { login: true, superImage })
 // })
+
+//// *************** Booking  Cancel***************************///
+router.get('/view-CancelRequests', verifyLogin,  async function (req, res, next) {
+  var status = "Cancel Request "
+  let requests = await db.get().collection(collection.CANCELCOLLECTION).find({}).sort({ _id: -1 }).limit(50).toArray()
+  res.render('admin/cancel/cancelRequest', { login: true, requests, status })
+
+});
+router.get('/approveCancelRequest/:id/:date/:time/:doctorid/:raisedBy', verifyLogin,  async (req, res) => {  
+  await db.get().collection(req.params.date.substring(3)).findOneAndUpdate(
+    { _id: ObjectID(req.params.doctorid), appointments: { $elemMatch: { date: req.params.date, time: req.params.time } } },
+    { $set: { "appointments.$.status": "cancelled" } },
+    { projection: { "appointments.$": 1 }, returnOriginal: false }
+  ).then(async (result, err) => {
+    output = result.value.appointments[0]
+    if (result.ok == 1) {
+      await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(output.patientid) },
+        {
+          $set: { "appointments.$[inds].status": "cancelled" }
+        },
+        {
+          "arrayFilters": [{ "inds.date": req.params.date, "inds.time": req.params.time }]
+        },
+      ).then(async (result, err) => {
+         if (result.modifiedCount == 1) {
+          if (req.params.raisedBy == "dr") {
+            await db.get()
+              .collection(collection.BOOKINGS)
+              .updateOne({
+                _id: ObjectID(req.params.doctorid),
+              },
+                {
+                  $inc: { balance: - output.fees },
+
+                },
+              )
+              .then((result) => {
+                if (result.modifiedCount == 1) {
+                  res.redirect('back')
+                }
+              })
+          }
+          else {
+            
+            await db.get()
+              .collection(collection.BOOKINGS)
+              .updateOne({
+                _id: ObjectID(req.params.doctorid),
+              },
+                {
+                  $inc: { balance: - output.fees },
+                  $push: { appointments: { time: output.time, date: output.date, treattype: output.treattype } }
+                },
+              )
+              .then((result) => {
+                if (result.modifiedCount == 1) {
+                  res.redirect('back')
+                }
+              })
+          }
+          await db.get().collection(collection.CANCELCOLLECTION).updateOne(
+            {
+              _id: ObjectID(req.params.id)
+            },
+            {
+              $set: { "status": "approved" }
+            }
+          )
+          // return res.status(200).json({ msg: "Appointment cancelled successful" });
+        } else
+          res.redirect('back')
+      })
+    }
+    else
+      res.redirect('back')
+  })
+
+    .catch(() => {
+      res.redirect('back')
+    })
+});
+router.get('/rejectCancelRequest/:id/:date/:time/:doctorid/:patientid/:raisedBy', verifyLogin, async (req, res) => {
+  await db.get().collection(collection.CANCELCOLLECTION).updateOne(
+    {
+      _id: ObjectID(req.params.id)
+    },
+    {
+      $set: { "status": "rejected" }
+    }
+  )
+  if (req.params.raisedBy == "dr") {
+    await db.get().collection(req.params.date.substring(3)).updateOne(
+      {
+        _id: ObjectID(req.params.doctorid)
+      },
+      {
+        $set: { "appointments.$[inds].status": "active" }
+      },
+      {
+        "arrayFilters": [{ "inds.date": req.params.date, "inds.time": req.params.time }]
+      },
+    ).then(async (result, err) => {
+      res.redirect('back')
+    })
+  }
+  else {
+    await db.get().collection(collection.USERSAPPOINTMENT).updateOne(
+      {
+        _id: ObjectID(req.params.patientid)
+      },
+      {
+        $set: { "appointments.$[inds].status": "active" }
+      },
+      {
+        "arrayFilters": [{ "inds.date": req.params.date, "inds.time": req.params.time }]
+      },
+    ).then(async (result, err) => {
+      res.redirect('back')
+    })
+  }
+
+});
 //// *************** list of cities***************************///
 router.get('/addcities', verifyLogin, async function (req, res, next) {
   var status = "Locations "
@@ -636,7 +758,7 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
 });
 router.post('/addAyurvedicDepartment', async (req, res) => {
   //console.log(req.body.department)
-  
+
   if (req.body.department == '') {
     res.redirect('back');
   } else {
@@ -645,9 +767,9 @@ router.post('/addAyurvedicDepartment', async (req, res) => {
         {
           _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
         },
-        { $push: { ayurvedicDepartment: { $each: [ req.body.department], $sort: 1 } } }
+        { $push: { ayurvedicDepartment: { $each: [req.body.department], $sort: 1 } } }
         // { $push: { ayurvedicDepartment: req.body.department }, $sort: { ayurvedicDepartment: 1 } }
-        
+
         // {
         //   $push: {
         //     ayurvedicDepartment: req.body.department
@@ -697,7 +819,7 @@ router.post('/addGeneralDepartment', verifyLogin, async (req, res) => {
         {
           _id: ObjectID('633fc9dce4f51a74f8e8cac3'),
         },
-        { $push: { generaldepartments: { $each: [ req.body.department], $sort: 1 } } }
+        { $push: { generaldepartments: { $each: [req.body.department], $sort: 1 } } }
         // {
         //   $push: {
         //     generaldepartments: req.body.department
@@ -788,10 +910,10 @@ router.get('/view-hospital/unSubscribe/:_id', verifyLogin, async function (req, 
     })
 
 });
-router.get('/view-expiringHospital',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringHospital', verifyLogin, async function (req, res, next) {
   var status = "Expiring Hospital "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,hospital:1}).toArray()
-  var data=list[0].hospital
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, hospital: 1 }).toArray()
+  var data = list[0].hospital
   // console.log(data)
   res.render('admin/hospital/expiringHospitalList', { login: true, data, status })
 
@@ -842,19 +964,19 @@ router.get('/view-hospital/extend/:_id', verifyLogin, async function (req, res, 
           // paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              hospital: {
-                _id: ObjectID(req.params._id),
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
+            },
+            {
+              $pull: {
+                hospital: {
+                  _id: ObjectID(req.params._id),
+                }
               }
-            }
-          },
-        ) 
+            },
+          )
         res.redirect('back');
       },
     )
@@ -911,10 +1033,10 @@ router.get('/view-pharmacy/active/:_id', verifyLogin, async function (req, res, 
     }
     )
 });
-router.get('/view-expiringPharmacy',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringPharmacy', verifyLogin, async function (req, res, next) {
   var status = "Expiring Pharmacy "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,pharmacy:1}).toArray()
-  var data=list[0].pharmacy
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, pharmacy: 1 }).toArray()
+  var data = list[0].pharmacy
   // console.log(data)
   res.render('admin/pharmacy/expiringPharmacyList', { login: true, data, status })
 
@@ -965,19 +1087,19 @@ router.get('/view-pharmacy/extend/:_id', verifyLogin, async function (req, res, 
           // paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              pharmacy: {
-                _id: ObjectID(req.params._id),
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
+            },
+            {
+              $pull: {
+                pharmacy: {
+                  _id: ObjectID(req.params._id),
+                }
               }
-            }
-          },
-        ) 
+            },
+          )
         res.redirect('back');
       },
     )
@@ -1033,10 +1155,10 @@ router.get('/view-nurse/active/:_id', verifyLogin, async function (req, res, nex
     }
     )
 });
-router.get('/view-expiringNurce',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringNurce', verifyLogin, async function (req, res, next) {
   var status = "Expiring Nurce "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,nurse:1}).toArray()
-  var data=list[0].nurse
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, nurse: 1 }).toArray()
+  var data = list[0].nurse
   // console.log(data)
   res.render('admin/nurse/expiringNurceList', { login: true, data, status })
 
@@ -1087,19 +1209,19 @@ router.get('/view-nurse/extend/:_id', verifyLogin, async function (req, res, nex
           // paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              nurse: {
-                _id: ObjectID(req.params._id),
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
+            },
+            {
+              $pull: {
+                nurse: {
+                  _id: ObjectID(req.params._id),
+                }
               }
-            }
-          },
-        ) 
+            },
+          )
         res.redirect('back');
       },
     )
@@ -1173,10 +1295,10 @@ router.get('/view-lab/active/:_id', verifyLogin, async function (req, res, next)
 //     })
 
 // });
-router.get('/view-expiringLab',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringLab', verifyLogin, async function (req, res, next) {
   var status = "Expiring Lab "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,lab:1}).toArray()
-  var data=list[0].lab
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, lab: 1 }).toArray()
+  var data = list[0].lab
   // console.log(data)
   res.render('admin/lab/expiringLabList', { login: true, data, status })
 
@@ -1227,19 +1349,19 @@ router.get('/view-lab/extend/:_id', verifyLogin, async function (req, res, next)
           // paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              lab: {
-                _id: ObjectID(req.params._id),
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
+            },
+            {
+              $pull: {
+                lab: {
+                  _id: ObjectID(req.params._id),
+                }
               }
-            }
-          },
-        ) 
+            },
+          )
         res.redirect('back');
       },
     )
@@ -1314,10 +1436,10 @@ router.get('/view-ambulance/active/:_id', verifyLogin, async function (req, res,
 //     })
 
 // });
-router.get('/view-expiringAmbulance',verifyLogin,  async function (req, res, next) {
+router.get('/view-expiringAmbulance', verifyLogin, async function (req, res, next) {
   var status = "Expiring Ambulance "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({_id:0,ambulance:1}).toArray()
-  var data=list[0].ambulance
+  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, ambulance: 1 }).toArray()
+  var data = list[0].ambulance
   // console.log(data)
   res.render('admin/ambulance/expiringAmbulanceList', { login: true, data, status })
 
@@ -1368,19 +1490,19 @@ router.get('/view-ambulance/extend/:_id', verifyLogin, async function (req, res,
           // paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        
-         db.get().collection(collection.EXPIRING_COLLECTION)
-        .updateOne(
-          {
-          },
-          {
-            $pull: {
-              ambulance: {
-                _id: ObjectID(req.params._id),
+
+        db.get().collection(collection.EXPIRING_COLLECTION)
+          .updateOne(
+            {
+            },
+            {
+              $pull: {
+                ambulance: {
+                  _id: ObjectID(req.params._id),
+                }
               }
-            }
-          },
-        ) 
+            },
+          )
         res.redirect('back');
       },
     )
@@ -1394,10 +1516,10 @@ router.get('/listOfProducts', verifyLogin, async function (req, res, next) {
   res.render('admin/products/listOfProducts', { login: true, product, status })
 
 });
-router.get('/addProducts',verifyLogin, async (req, res) => {
+router.get('/addProducts', verifyLogin, async (req, res) => {
   res.render('admin/products/addProducts')
 })
-router.post('/addProducts',verifyLogin, async (req, res) => {
+router.post('/addProducts', verifyLogin, async (req, res) => {
   var image2 = req?.files?.img
   await image2.mv('./uploads/regImages/' + req.body.name + ".png");
   const image = await fs.readFileSync('./uploads/regImages/' + req.body.name + ".png");
