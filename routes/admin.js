@@ -91,7 +91,7 @@ router.post('/reset-password', verifyLogin, async (req, res) => {
       .findOne({ username: 'sibinjames.sibin@gmail.com' }, async (err, user) => {
         await bcrypt.compare(req.body.currentpassword, user.password).then(async (status) => {
           if (status) {
-            req.body.newpassword = await bcrypt.hash(req.body.newpassword, 08);
+            req.body.newpassword = await bcrypt.hash(req.body.newpassword, 8);
             // (req.body.password)
             await db.get()
               .collection(collection.ADMIN_COLLECTION)

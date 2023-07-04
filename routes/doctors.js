@@ -22,12 +22,12 @@ var body_parser = require('body-parser');
 app.use(body_parser.urlencoded({ extended: false }));
 var multer = require('multer');
 const upload = multer();
-const Razorpay = require('razorpay');
+// const Razorpay = require('razorpay');
 
-const razorpay = new Razorpay({
-  key_id: 'rzp_test_r9BjXS8K8XqlTm',
-  key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
-});
+// const razorpay = new Razorpay({
+//   key_id: 'rzp_test_r9BjXS8K8XqlTm',
+//   key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+// });
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
@@ -42,7 +42,7 @@ app.post('/register1', async (req, res) => {
         return res.status(403).json({ msg: "User Already exist" });
       }
       else {
-        var pass = await bcrypt.hash(req.body.password, 08);
+        var pass = await bcrypt.hash(req.body.password, 8);
 
         var j = 0
         start:
@@ -262,7 +262,7 @@ app.post("/verifyforgetpassword", async (req, res) => {
     );
 });
 app.post('/reset-password', async (req, res) => {
-  var pass = await bcrypt.hash(req.body.password, 08);
+  var pass = await bcrypt.hash(req.body.password, 8);
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
@@ -296,7 +296,7 @@ app.post("/subscription", async (req, res) => {
           paymentId: req.body.paymentId
         },
       }, (err, result) => {
-        razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
+        // razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
           return res.status(200).json({ msg: "Suceessfully Subscribed" });
@@ -314,7 +314,6 @@ app.post("/login", async (req, res) => {
         await bcrypt.compare(req.body.password, user.password).then(async (status) => {
           if (status) {
             if (user.lvl == "6" && user.status == "active") {
-
               let token = await jwt.sign({ username: req.params.username, _id: user._id }, config.key);
               //console.log(token)
               res.json({
@@ -353,7 +352,7 @@ app.post('/change-password', middleware.checkToken, async (req, res) => {
       if (user) {
         await bcrypt.compare(req.body.currpassword, user.password).then(async (status) => {
           if (status) {
-            req.body.newpassword = await bcrypt.hash(req.body.newpassword, 08);
+            req.body.newpassword = await bcrypt.hash(req.body.newpassword, 8);
             await db.get()
               .collection(collection.DOCTORS)
               .updateOne(
@@ -1169,7 +1168,7 @@ app.post("/subscriptionExtend", middleware.checkToken, async (req, res) => {
 
         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
         if (result.modifiedCount == 1) {
-          razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
+          // razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
           return res.status(200).json({ msg: "Suceessfully extended", date: newdate });
         }
         else {

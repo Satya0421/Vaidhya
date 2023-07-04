@@ -9,12 +9,12 @@ require('dotenv').config();
 let middleware = require("../middleware");
 const bcrypt = require('bcryptjs');
 const ObjectID = require("mongodb").ObjectID
-const Razorpay = require('razorpay');
+// const Razorpay = require('razorpay');
 const fast2sms = require('fast-two-sms');
-const razorpay = new Razorpay({
-    key_id: 'rzp_test_r9BjXS8K8XqlTm',
-    key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
-});
+// const razorpay = new Razorpay({
+//     key_id: 'rzp_test_r9BjXS8K8XqlTm',
+//     key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
+// });
 //// ***************Registration***************************///
 app.post('/register', async (req, res) => {
     await db.get()
@@ -29,7 +29,7 @@ app.post('/register', async (req, res) => {
             else {
                 var num = Math.floor(1000 + Math.random() * 9000)
                 // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
-                var pass = await bcrypt.hash(req.body.password, 08);
+                var pass = await bcrypt.hash(req.body.password,8);
                 await db.get()
                     .collection(collection.USERS)
                     .insertOne(
@@ -86,7 +86,7 @@ app.post("/verifyPhone", async (req, res) => {
         );
 });
 app.post('/resendCode', async (req, res) => {
-    console.log("hello")
+    // console.log("hello")
     await db.get()
         .collection(collection.USERS)
         .findOne(
@@ -155,7 +155,7 @@ app.post("/verifyforgetpassword", async (req, res) => {
         );
 });
 app.post('/reset-password', async (req, res) => {
-    req.body.password = await bcrypt.hash(req.body.password, 08);
+    req.body.password = await bcrypt.hash(req.body.password, 8);
     await db.get()
         .collection(collection.USERS)
         .updateOne(
@@ -430,14 +430,14 @@ app.post('/bookAppointment', middleware.checkToken, async (req, res) => {
                         )
                         .then((result) => {
                             if (result.modifiedCount == 1) {
-                                razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee * 100))
-                                    .then(function (response) {
-                                        // console.log(response);
-                                    })
-                                    .catch(function (err) {
-                                        // console.error(err);
+                                // razorpay.payments.capture(req.body.paymentid, parseInt(req.body.fee * 100))
+                                //     .then(function (response) {
+                                //         // console.log(response);
+                                //     })
+                                //     .catch(function (err) {
+                                //         // console.error(err);
 
-                                    });
+                                //     });
                                 return res.status(200).json({ msg: "Appointment successful" });
                             }
                         })
