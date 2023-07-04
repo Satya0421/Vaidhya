@@ -41,8 +41,6 @@ app.use(body_parser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({ secret: "Aikara", resave: false, saveUninitialized: true, cookie: { maxAge: 90000000 } }));
 app.use(fileUpload({ safeFileNames: true, preserveExtension: true }));
-
-
 app.use("/uploads", express.static("uploads"));
 const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
@@ -52,8 +50,6 @@ const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
 const websiteRoute = require("./routes/registration");
 app.use("/register", websiteRoute);
-
-
 //  app.route("/").get((req, res) => 
 //  res.render("pilasa"));
 app.route("/").get((req, res) =>
