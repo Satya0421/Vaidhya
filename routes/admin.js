@@ -21,6 +21,7 @@ router.get('/login', (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
+  console.log("hello")
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .findOne({ username: req.body.email }, async (err, user) => {
