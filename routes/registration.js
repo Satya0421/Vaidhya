@@ -321,6 +321,21 @@ router.post('/ambulance', async (req, res) => {
 
 })
 
+router.get('/apk', (req, res) => {
+  // Set the appropriate headers for the download
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+  res.setHeader('Content-Disposition', `attachment; filename=${'./assets/apk/user.apk'}`);
+
+  // Send the APK file to the client
+  res.download('./assets/apk/user.apk', (err) => {
+    if (err) {
+      // Handle any errors that occur during the download
+      console.error('Error while downloading APK:', err);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
 // router.post('/multiinsert', async (req, res) => { 
 //   console.log("hello")
 //   const image = await fs.readFileSync('./uploads/regImages/1.png');
