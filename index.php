@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
-    <?php include_once("html/header.html"); ?>
+    <?php include_once("html/index.html"); ?>
     
     <?php
         // Get the requested page from the URL (e.g., /about, /contact)
