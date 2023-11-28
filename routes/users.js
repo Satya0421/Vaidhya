@@ -289,6 +289,7 @@ app.get('/getbanners', middleware.checkToken, async (req, res) => {
 //   });
 app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
     // var index = 0;
+    // console.log(req.body)
     if (req.body.treattype == 1 || req.body.treattype == 4) {
         var result2 = await db.get().collection(collection.BOOKINGS).aggregate([
             {
@@ -310,18 +311,18 @@ app.post('/displayDoctors', middleware.checkToken, async (req, res) => {
                     { "appointments": { $elemMatch: { treattype: req.body.treattype } } }]
                 },
             },
-            {
-                $project: {
-                    _id: 1,
-                    department: "$department",
-                    address: "$address",
-                    name: "$name",
-                    appointments: { $slice: ["$appointments", 1] },
-                    rating: { $divide: ["$rating", "$totalRating"] },
+            // {
+            //     $project: {
+            //         _id: 1,
+            //         department: "$department",
+            //         address: "$address",
+            //         name: "$name",
+            //         appointments: { $slice: ["$appointments", 1] },
+            //         rating: { $divide: ["$rating", "$totalRating"] },
 
-                }
-            },
-            { $sample: { size: 25 } }
+            //     }
+            // },
+            // { $sample: { size: 25 } }
         ]).toArray()
         res.json(result2);
     }

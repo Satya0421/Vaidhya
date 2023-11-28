@@ -564,16 +564,25 @@ router.post('/doctors_bookings', verifyLogin, async function (req, res, next) {
 //// *************** Booking  Cancel***************************///
 router.get('/view-CancelRequests', verifyLogin,  async function (req, res, next) {
   var status = "Cancel Request "
-  let requests = await db.get().collection(collection.CANCELCOLLECTION).find({}).sort({ _id: -1 }).limit(50).toArray()
+  let requests = await db.get().collection(collection.CANCELCOLLECTION).find({status: "Raised"}).sort({ _id: -1 }).limit(50).toArray()
   res.render('admin/cancel/cancelRequest', { login: true, requests, status })
 
 });
+
+router.get('/history-CancelRequests', verifyLogin,  async function (req, res, next) {
+  var status = "Cancel Request "
+  let requests = await db.get().collection(collection.CANCELCOLLECTION).find({status: { $ne: "Raised" } }).sort({ _id: -1 }).limit(200).toArray()
+  res.render('admin/cancel/cancel_history', { login: true, requests, status })
+
+});
 router.get('/approveCancelRequest/:id/:date/:time/:doctorid/:raisedBy', verifyLogin,  async (req, res) => {  
+ 
   await db.get().collection(req.params.date.substring(3)).findOneAndUpdate(
     { _id: ObjectID(req.params.doctorid), appointments: { $elemMatch: { date: req.params.date, time: req.params.time } } },
     { $set: { "appointments.$.status": "cancelled" } },
     { projection: { "appointments.$": 1 }, returnOriginal: false }
   ).then(async (result, err) => {
+   
     output = result.value.appointments[0]
     if (result.ok == 1) {
       await db.get().collection(collection.USERSAPPOINTMENT).updateOne({ _id: ObjectID(output.patientid) },
