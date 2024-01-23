@@ -77,7 +77,9 @@ app.post('/register1', async (req, res) => {
             .then((result) => {
               // console.log(result)
               if (result.acknowledged) {
-                fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
+                request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ code +'&flash=0&numbers='+parseInt((req.body.phone),function(err,res,body){
+                }))
+                // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
                 return res.status(200).json({ _id: result.insertedId })
               }
             })
@@ -127,7 +129,9 @@ app.post('/resendCode', async (req, res) => {
     .findOne(
       { _id: ObjectID(req.body._id) },
       async (err, profile) => {
-        fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
+        request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ profile.code +'&flash=0&numbers='+parseInt((profile.phone),function(err,res,body){
+                }))
+        // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
         return res.status(200).json()
       },
     )
@@ -233,7 +237,9 @@ app.post('/forget_password', async (req, res) => {
         if (err) {
           return res.status(500).json({ msg: "Error to process...Try once more" });
         }
-        fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' Greetings From Vaidhya .  One time code to reset your password is ' + code + "\n ", numbers: [parseInt(profile.value.phone)] })
+        request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ code +'&flash=0&numbers='+parseInt((profile.value.phone),function(err,res,body){
+        }))
+        // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' Greetings From Vaidhya .  One time code to reset your password is ' + code + "\n ", numbers: [parseInt(profile.value.phone)] })
         return res.status(200).json({ _id: profile.value._id });
         // });
       },
