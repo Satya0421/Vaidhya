@@ -47,8 +47,12 @@ app.post('/register', async (req, res) => {
                     )
                     .then((result) => {
                         if (result.acknowledged) {
-                            request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ num +'&flash=0&numbers='+parseInt((req.body.phone),function(err,res,body){
-                            }))
+                            request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ num +'&flash=0&numbers='+(req.body.phone),function(err,res,body){
+                    if (!err && res.statusCode === 200) {
+                        console.log(body) // Print the google web page.
+                     } 
+                     console.log(res) 
+                  })
                             // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + num + "\n ", numbers: [parseInt(req.body.phone)] })
                             return res.status(200).json({ _id: result.insertedId })
                         }
@@ -96,10 +100,14 @@ app.post('/resendCode', async (req, res) => {
             { _id: ObjectID(req.body._id) },
             async (err, profile) => {
                 console.log(profile.phone   )
-                request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ profile.code +'&flash=0&numbers='+parseInt((profile.phone),function(err,res,body){
-                  }))
-                         
-            //  var result=await  fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [] })
+                request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ profile.code +'&flash=0&numbers='+(profile.phone),function(err,res,body){
+                    if (!err && res.statusCode === 200) {
+                        console.log(body) // Print the google web page.
+                     } 
+                     console.log(res) 
+                  })
+                  
+            //  var result=await  fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [profile.phone] })
             
             // var result=await  fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt("9496473754")] })
           
@@ -110,6 +118,7 @@ app.post('/resendCode', async (req, res) => {
 app.post('/forget_password', async (req, res) => {
     // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
     //console.log(req.body)
+   
     var num = Math.floor(1000 + Math.random() * 9000)
     await db.get()
         .collection(collection.USERS)
@@ -128,10 +137,12 @@ app.post('/forget_password', async (req, res) => {
                     return res.status(500).json({ msg: "Error to process...Try once more" });
                 }
               
-
-        //   console.log(profile.value.phone)
-          request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ num +'&flash=0&numbers='+parseInt((profile.value.phone),function(err,res,body){
-        }))
+                request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ num +'&flash=0&numbers='+(profile.value.phone),function(err,res,body){
+                    if (!err && res.statusCode === 200) {
+                        console.log(body) // Print the google web page.
+                     } 
+                     console.log(res) 
+                  })
                 // fast2sms.sendMessage({ authorization: process.env.API_KEY,route: otp, message: 'Greetings From Vaidhya .  One time code to reset your password is ' + num, numbers: parseInt(profile.value.phone) })
                 // var mailOption = {
                 //   from: 'pilasa.ae@gmail.com',
