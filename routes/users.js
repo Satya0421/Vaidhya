@@ -210,6 +210,7 @@ app.post("/login", async (req, res) => {
             else {
                 if (user) {
                     await bcrypt.compare(req.body.password, user.password).then(async (status) => {
+                        if (status) {
                         if (user.lvl == "2" && user.status == "active") {
                             let token = await jwt.sign({ username: req.body.username, _id: user._id }, config.key);
                             res.json({
@@ -220,6 +221,12 @@ app.post("/login", async (req, res) => {
                         } else {
                             return res.status(403).json({ status: user.status, lvl: user.lvl, _id: user._id, phone: user.phone, msg: "username or password  incorrect" });
                         }
+                    }
+                    else
+                    {
+                        
+                            return res.status(500).json({ msg: "username or password  incorrect" });
+                                              }
                     })
                 }
 
