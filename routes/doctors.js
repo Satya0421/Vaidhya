@@ -29,6 +29,9 @@ const upload = multer();
 //   key_id: 'rzp_test_r9BjXS8K8XqlTm',
 //   key_secret: 'rkQpfdaMOwfWoAo8v6qYH1nX',
 // });
+
+
+
 //// ***************Registration***************************///
 app.post('/register1', async (req, res) => {
   // //console.log(req.body)
@@ -321,7 +324,14 @@ app.post("/subscription", async (req, res) => {
           return res.status(200).json({ msg: "Suceessfully Subscribed" });
         }
       },
-    )
+    ).then(async(err,value)=>{
+      if (err) res.status(500).send({msg:err.toString()});
+      await db.get().collection(collection.SUBSCRIPTION).insertOne({
+          referedBy: req.body.referedBy,
+          paymentId: req.body.paymentId,
+          docId:req.body._id
+      });
+    })
 });
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {

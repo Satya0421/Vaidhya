@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 var router = express.Router();
 var collection = require("../config/collections");
 var db = require("../config/connection");
-const ObjectID = require("mongodb").ObjectID;
+var ObjectID = require("mongodb").ObjectID;
 let path = require('path');
 const { Console } = require("console");
 
@@ -200,6 +200,22 @@ router.get('/view-inactiveDoctors', verifyLogin, async function (req, res, next)
   res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
 
 });
+router.post('/deleteDoctorByAdmin/:_id', verifyLogin, async (req, res, next) => {
+  let doctorId = req.params._id;
+  try {
+    await db.get().collection(collection.DOCTORS).updateOne(
+      { _id: ObjectID(doctorId) }, // Filter
+      { $set: { status: "inactive" } } // Update
+    ).then(async(value)=>{
+      res.redirect('/adminPanel/VidhyA789/view-activeDoctors');
+    });
+  } catch (error) {
+    console.error('Error updating doctor status:', error);
+    // Handle error
+    res.status(500).send('Error updating doctor status');
+  }
+});
+
 router.get('/view-activeDoctors', verifyLogin, async function (req, res, next) {
   var status = "Active "
   let doctors = await db.get().collection(collection.DOCTORS).find({ status: "active" }).toArray()

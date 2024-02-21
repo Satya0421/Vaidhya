@@ -2,32 +2,38 @@
   <div class="container">
     <h3>{{this.status}}Doctors</h3>
     <br>
-    <table class="table mt-5" id="churchTable">
+    <table class="table mt-4" id="churchTable">
       <thead>
         <tr>
           <th scope="col">Id</th>
-          <th scope="col">Username</th>
-          <th scope="col">name</th>
-          <th scope="col">phone</th>
-          <th scope="col">specality</th>
-          <th scope="col">Refered Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Speciality</th>
+          <th scope="col">Category</th>
+          <th scope="col">Refered By</th>
+          
           <th scope="col">Options</th>
+          <th scope="col">Delete</th>
+          
         </tr>
       </thead>
       <tbody>
         {{#each doctors}}
-        <tr>
+         <tr>
           <td>{{this._id}}</td>
           <td>{{this.name}}</td>
           <td>{{this.username}}</td>
           <td>{{this.phone}}</td>
           <td>{{this.specality}}</td>
-           <td>{{this.referId}}</td>
-          <br>
-          
-          <td><a href="/adminPanel/VidhyA789/view-doctor/{{this._id}} "
-              class="btn btn-primary">View</a>
-            <!-- send the value use query-->
+          <td>{{this.category}}</td>
+          <td>{{this.referId}}</td>
+          <td><a href="/adminPanel/VidhyA789/view-doctor/{{this._id}}" class="btn btn-primary">View</a></td>
+          <td>
+            <form action="/adminPanel/VidhyA789/deleteDoctorByAdmin/{{this._id}}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{this._id}}?')">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </td>
         </tr>
         {{/each}}
       </tbody>
@@ -35,6 +41,7 @@
   </div>
 </section>
 <script>
+
   $(function () {
     $('#churchTable').DataTable();
   });

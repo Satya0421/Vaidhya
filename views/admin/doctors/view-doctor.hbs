@@ -50,46 +50,46 @@
                 {{!-- <button type="submit" class="btn btn-primary ">update</button> --}}
             </form>
           </div>
-          <div class=col-md-3 p-5>
-             <b><label for="Image">Image</label></b>
-                    <div class="card" style="width: 15rem; height: 15rem" >
-                         <img src="/uploads/DoctorsImage/{{doctors._id}}.jpg" alt="np found" style="width:200px; height:auto" id="imgView" class="pt-3 pb-3">
-                        <div>
-                         
-                        </div> 
-                    </div>
-                    <br>
-                </div>
-         <div class=col-md-3 p-5>
-             <b><label for="Image">Id Proff</label></b>
-                    <div class="card" style="width: 15rem; height: 15rem" >
-                         <img src="/uploads/DoctorsIdProof/{{doctors._id}}.jpg" alt="np found" style="width:200px; height:auto" id="imgView" class="pt-3 pb-3">
-                        <div>
-                         
-                        </div> 
-                    </div>
-                    <br>
-                </div>
-         <div class=col-md-3 p-5>
-             <b><label for="Image">Education Certificate</label></b>
-                    <div class="card" style="width: 15rem; height: 15rem" >
-                         <img src="/uploads/EducationCertificate/{{doctors._id}}.jpg" alt="np found" style="width:200px; height:auto" id="imgView" class="pt-3 pb-3">
-                        <div>
-                         
-                        </div> 
-                    </div>
-                    <br>
-                </div>
-         <div class=col-md-3 p-5>
-             <b><label for="Image">Registeration Certificate</label></b>
-                    <div class="card" style="width: 15rem; height: 15rem" >
-                         <img src="/uploads/RegisterationCertificate/{{doctors._id}}.jpg" alt="np found" style="width:200px; height:auto" id="imgView" class="pt-3 pb-3">
-                        <div>
-                         
-                        </div> 
-                    </div>
-                    <br>
-                </div>
+          <div class="col-md-3 p-5">
+    <b><label for="Image">Image</label></b>
+    <div class="card image-container">
+        <a href="/uploads/DoctorsImage/{{doctors._id}}.jpg" class="image-link">
+            <img src="/uploads/DoctorsImage/{{doctors._id}}.jpg" alt="Image" class="pt-3 pb-3" id="imgView">
+        </a>
+    </div>
+    <br>
+</div>
+
+        <div class="col-md-3 p-5">
+    <b><label for="Image">Id Proff</label></b>
+    <div class="card image-container">
+        <a href="/uploads/DoctorsIdProof/{{doctors._id}}.jpg" class="image-link">
+            <img src="/uploads/DoctorsIdProof/{{doctors._id}}.jpg" alt="Image" class="pt-3 pb-3" id="imgView">
+        </a>
+    </div>
+    <br>
+</div>
+
+         <div class="col-md-3 p-5">
+    <b><label for="Image">Education Certificate</label></b>
+    <div class="card image-container">
+        <a href="/uploads/EducationCertificate/{{doctors._id}}.jpg" class="image-link">
+            <img src="/uploads/EducationCertificate/{{doctors._id}}.jpg" alt="Image" class="pt-3 pb-3" id="imgView">
+        </a>
+    </div>
+    <br>
+</div>
+
+        <div class="col-md-3 p-5">
+    <b><label for="Image">Registration Certificate</label></b>
+    <div class="card image-container">
+        <a href="/uploads/RegisterationCertificate/{{doctors._id}}.jpg" class="image-link">
+            <img src="/uploads/RegisterationCertificate/{{doctors._id}}.jpg" alt="Image" class="pt-3 pb-3" id="imgView">
+        </a>
+    </div>
+    <br>
+</div>
+
         <form>
           <div>
                       <label for="status">Active Status</label>
@@ -107,8 +107,46 @@
 
     </div>
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
 <script>
+    
     function viewImage(event){
         document.getElementById('imgView').src=URL.createObjectURL(event.target.files[0]) //to access new image
     }
+    $(document).ready(function() {
+    $('.image-link').magnificPopup({
+        type: 'image',
+        gallery: {
+            enabled: true
+        },
+        zoom: {
+            enabled: true
+        }
+    });
+});
+
+
+
 </script>
+<style>
+    .image-container {
+        position: relative;
+        width: 15rem; 
+        height: 15rem;
+        overflow: hidden;/
+    }
+
+    .image-link {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .image-container img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+</style>

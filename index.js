@@ -28,7 +28,7 @@ app.use(compression({ level: 9, threshold: 0, filter: () => true }))
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
-app.engine('hbs', hbs.engine({ extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layout/', partialDir: __dirname + '/views/partials/' }))
+app.engine('hbs', hbs.engine({ extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layout/', partialDir: __dirname + '/views/partials/', }))
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'hbs');
 // app.engine('hbs',hbs({extname:'hbs',defaultLayout:'layout', layoutsDir:__dirname+'/views/layout/',partialsDir:__dirname+'/views/partials'}));
@@ -58,6 +58,10 @@ app.route("/termsAndConditions").get((req, res) =>
   res.render("terms"));
 app.route("/DrtermsAndConditions").get((req, res) =>
   res.render("drterms"));
+  app.route("/docsubScribeTerms").get((req, res) =>
+  res.render("drsubterms"));
+  app.route("/docsubScribePrivacy").get((req, res) =>
+  res.render("drsubprivacy"));
 //   app.get('/deleteDaily', async (req, res) => {
 //     var date= new Date();
 //    var dates=date.getDate().toString().padStart(2, '0')+"-"+(date.getMonth()+1).toString().padStart(2, '0')+'-'+date.getFullYear();
