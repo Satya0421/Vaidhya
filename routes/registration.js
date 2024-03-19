@@ -327,7 +327,7 @@ router.get('/apk', (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename=${'./assets/apk/user.apk'}`);
 
   // Send the APK file to the client
-  res.download('./assets/apk/user.apk', (err) => {
+  res.download('./assets/apk/vidhya_doctor.apk', (err) => {
     if (err) {
       // Handle any errors that occur during the download
       console.error('Error while downloading APK:', err);
