@@ -43,7 +43,7 @@ app.post('/register1', async (req, res) => {
         return res.status(500).json({ msg: "Error to process... Try once more" });
       }
       if (result) {
-        return res.status(403).json({ msg: "User Already exist Hii" });
+        return res.status(403).json({ msg: "User Already exist" });
       }
       else {
         var pass = await bcrypt.hash(req.body.password, 8);
