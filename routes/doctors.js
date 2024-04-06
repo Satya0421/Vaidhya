@@ -43,7 +43,7 @@ app.post('/register1', async (req, res) => {
         return res.status(500).json({ msg: "Error to process... Try once more" });
       }
       if (result) {
-        return res.status(403).json({ msg: "User Already exist" });
+        return res.status(403).json({ msg: "User Already exist Hii" });
       }
       else {
         var pass = await bcrypt.hash(req.body.password, 8);
@@ -88,6 +88,7 @@ app.post('/register1', async (req, res) => {
                      console.log(res) 
                   })
                 // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
+                console.log(result.insertedId)
                 return res.status(200).json({ _id: result.insertedId })
               }
             })
@@ -305,8 +306,39 @@ app.post('/reset-password', async (req, res) => {
 app.get("/subFees", async (req, res) => {
   res.json(await db.get().collection(collection.LISTOFITEMS).find().project({ _id: 0, 'doctorsub': 1 }).toArray())
 });
-app.post("/subscription", async (req, res) => {
-  await db.get()
+// app.post("/subscription", async (req, res) => {
+//   // console.log("Test")
+//   // console.log(req.body)
+//   await db.get()
+//     .collection(collection.DOCTORS)
+//     .updateOne(
+//       { _id: ObjectID(req.body._id) },
+//       {
+//         $set: {
+//           subEnddate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+//           lvl: "5",
+//           referedBy: req.body.referedBy,
+//           paymentId: req.body.paymentId
+//         },
+//       }, (err, result) => {
+//         // razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
+//         if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
+//         if (result.modifiedCount == 1) {
+//           return res.status(200).json({ msg: "Suceessfully Subscribed" });
+//         }
+//       },
+//     ).then(async(err,value)=>{
+//       if (err) res.status(500).send({msg:err.toString()});
+//       await db.get().collection(collection.SUBSCRIPTION).insertOne({
+//           referedBy: req.body.referedBy,
+//           paymentId: req.body.paymentId,
+//           docId:req.body._id
+//       });
+//     })
+// });
+
+app.post("/subscription", (req, res) => {
+  db.get()
     .collection(collection.DOCTORS)
     .updateOne(
       { _id: ObjectID(req.body._id) },
@@ -317,22 +349,26 @@ app.post("/subscription", async (req, res) => {
           referedBy: req.body.referedBy,
           paymentId: req.body.paymentId
         },
-      }, (err, result) => {
-        // razorpay.payments.capture(req.body.paymentId, parseInt(req.body.fee * 100))
-        if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
-        if (result.modifiedCount == 1) {
-          return res.status(200).json({ msg: "Suceessfully Subscribed" });
-        }
-      },
-    ).then(async(err,value)=>{
-      if (err) res.status(500).send({msg:err.toString()});
-      await db.get().collection(collection.SUBSCRIPTION).insertOne({
+      })
+    .then(result => {
+      if (result.modifiedCount == 1) {
+        return db.get().collection(collection.SUBSCRIPTION).insertOne({
           referedBy: req.body.referedBy,
           paymentId: req.body.paymentId,
-          docId:req.body._id
-      });
+          docId: req.body._id
+        });
+      } else {
+        throw new Error("Error to process...Try once more");
+      }
     })
+    .then(() => {
+      res.status(200).json({ msg: "Successfully Subscribed" });
+    })
+    .catch(err => {
+      res.status(500).json({ msg: err.toString() });
+    });
 });
+
 //// ***************Main Pages***************************///
 app.post("/login", async (req, res) => {
   //console.log(req.body)

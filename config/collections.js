@@ -1,5 +1,6 @@
 module.exports={
     DOCTORS:'doctors', //setting database name in the new varaiable
+    SUBSCRIPTION:'subscriptions',
     BOOKINGS:'bookings',
     USERS:'users',
     USERSAPPOINTMENT:'usersAppointment',
