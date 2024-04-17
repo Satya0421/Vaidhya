@@ -26,9 +26,9 @@
           <td>{{this.specality}}</td>
           <td>{{this.category}}</td>
           <td>{{this.referId}}</td>
-          <td><a href="/adminPanel/Vaidhya789/view-doctor/{{this._id}}" class="btn btn-primary">View</a></td>
+          <td><a href="/adminPanel/Vaidhya/view-doctor/{{this._id}}" class="btn btn-primary">View</a></td>
           <td>
-            <form action="/adminPanel/Vaidhya789/deleteDoctorByAdmin/{{this._id}}" method="POST" onsubmit="return confirm('Are you sure you want to delete? \n\nUsername: {{this.username}} \nPhone: {{this.phone}}')">
+            <form action="/adminPanel/Vaidhya/deleteDoctorByAdmin/{{this._id}}" method="POST" onsubmit="return confirm('Are you sure you want to delete? \n\nUsername: {{this.username}} \nPhone: {{this.phone}}')">
               <button type="submit" class="btn btn-danger">Delete</button>
             </form>
           </td>

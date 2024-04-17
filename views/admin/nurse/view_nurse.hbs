@@ -2,7 +2,7 @@
     <div class="col-md-6 m-auto">
         <div class="container mt-5 pl-5">
             <h2 class="text-center">Nurse Information</h2>
-            <form action"/adminPanel/Vaidhya789/view-doctor/{{this._id}}" method="post">
+            <form action"/adminPanel/Vaidhya/view-doctor/{{this._id}}" method="post">
               
                 <label for="id">Id</label>
                 <input type="text" name="id" class="form-control" value="{{nurse._id}} ">
@@ -36,9 +36,9 @@
                 <label for="status">Active Status</label>
                 <input type="text" name="status" class="form-control" value="{{nurse.status}}">
                 <br>
-                <a href="/adminPanel/Vaidhya789/view-nurse/active/{{nurse._id}}"
+                <a href="/adminPanel/Vaidhya/view-nurse/active/{{nurse._id}}"
                     class="btn btn-primary">Active</a>
-                <a href="/adminPanel/Vaidhya789/view-nurse/unSubscribe/{{nurse._id}}"
+                <a href="/adminPanel/Vaidhya/view-nurse/unSubscribe/{{nurse._id}}"
                     class="btn btn-danger"
                     onclick="return confirm('are you want to UnSubscribe {{nurse.Name}}')">UnSubscribe</a>
                 <br>
