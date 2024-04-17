@@ -2,7 +2,7 @@
     <div class="col-md-6 m-auto">
         <div class="container mt-5 pl-5">
             <h2 class="text-center">Lab Information</h2>
-            <form action"/adminPanel/VidhyA789/view-doctor/{{this._id}}" method="post">
+            <form action"/adminPanel/Vaidhya789/view-doctor/{{this._id}}" method="post">
               
                 <label for="id">Id</label>
                 <input type="text" name="id" class="form-control" value="{{lab._id}} ">
@@ -36,9 +36,9 @@
                 <label for="status">Active Status</label>
                 <input type="text" name="status" class="form-control" value="{{lab.status}}">
                 <br>
-                <a href="/adminPanel/VidhyA789/view-lab/active/{{lab._id}}"
+                <a href="/adminPanel/Vaidhya789/view-lab/active/{{lab._id}}"
                     class="btn btn-primary">Active</a>
-                <a href="/adminPanel/VidhyA789/view-lab/unSubscribe/{{lab._id}}"
+                <a href="/adminPanel/Vaidhya789/view-lab/unSubscribe/{{lab._id}}"
                     class="btn btn-danger"
                     onclick="return confirm('are you want to UnSubscribe {{lab.Name}}')">UnSubscribe</a>
                 <br>

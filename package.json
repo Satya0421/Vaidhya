@@ -1,14 +1,14 @@
 {
-  "name": "vidhya",
+  "name": "Vaidhya",
   "version": "1.0.0",
-  "description": "vidhya",
+  "description": "Vaidhya",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index",
     "dev": "nodemon index"
   },
-  "author": "Sibin",
+  "author": "Satish",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",

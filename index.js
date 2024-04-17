@@ -45,7 +45,7 @@ app.use("/uploads", express.static("uploads"));
 const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
 const adminRoute = require("./routes/admin");
-app.use("/adminPanel/VidhyA789/", adminRoute);
+app.use("/adminPanel/Vaidhya789/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
 const websiteRoute = require("./routes/registration");

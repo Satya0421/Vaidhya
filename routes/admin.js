@@ -13,7 +13,7 @@ const verifyLogin = (req, res, next) => { // to verify the session is valid or n
     next()
   }
   else
-    res.redirect("/adminPanel/VidhyA789/login",)
+    res.redirect("/adminPanel/Vaidhya789/login",)
 }
 //// *************** Account***************************///
 router.get('/login', (req, res) => {
@@ -37,7 +37,7 @@ router.get('/login', (req, res) => {
 // });
 
 router.post('/login', async (req, res) => {
-  console.log("hello")
+  // console.log("hello")
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .findOne({ username: req.body.email }, async (err, user) => {
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
             //   });
             req.session.loggedIn = true
             req.session.user = user._id
-            res.redirect('/adminPanel/VidhyA789/') // redirect used to access same page which is accessed before
+            res.redirect('/adminPanel/Vaidhya789/') // redirect used to access same page which is accessed before
           }
           else {
             req.session.loginerr = true  //seting up the login error
@@ -124,7 +124,7 @@ router.post('/reset-password', verifyLogin, async (req, res) => {
                   //console.log(result)
                   if (err) return res.send(err);
                   if (result.modifiedCount == 1) {
-                    res.redirect("/adminPanel/VidhyA789/login");
+                    res.redirect("/adminPanel/Vaidhya789/login");
                   }
                   else {
                     res.redirect('back');
@@ -146,7 +146,7 @@ router.get('/logout', (req, res) => {
   //req.session.destroy()
   req.session.user = null
   req.session.loggedIn = false
-  res.redirect("/adminPanel/VidhyA789/login")
+  res.redirect("/adminPanel/Vaidhya789/login")
 });
 
 //// *************** Dash***************************///
@@ -168,7 +168,7 @@ router.post('/Add-superImage', verifyLogin, async function (req, res, next) {
           url: req.body.url
         })
         .then((result) => {
-          res.redirect("/adminPanel/VidhyA789/");
+          res.redirect("/adminPanel/Vaidhya789/");
         })
 
         .catch(() => {
@@ -190,9 +190,9 @@ router.get('/delete-superImage/:_id/:imgName', verifyLogin, async function (req,
     .then((result) => {
       //console.log(result)
       if (result.deletedCount == 1) {
-        res.redirect("/adminPanel/VidhyA789/");
+        res.redirect("/adminPanel/Vaidhya789/");
         // fs.unlinkSync('./uploads/superImage/' + req.params.imgName);
-        // res.redirect("/adminPanel/VidhyA789/");
+        // res.redirect("/adminPanel/Vaidhya789/");
         fs.unlink('./uploads/superImage/' + req.params.imgName, (err, done) => {  // deleting image of the product
           if (!err) {
             res.status(200).json();
@@ -200,7 +200,7 @@ router.get('/delete-superImage/:_id/:imgName', verifyLogin, async function (req,
         })
       }
       else {
-        res.redirect("/adminPanel/VidhyA789/");
+        res.redirect("/adminPanel/Vaidhya789/");
       }
     })
     .catch(() => {
@@ -226,7 +226,7 @@ router.get('/view-inactiveDoctors', verifyLogin, async function (req, res, next)
 //       { _id: ObjectID(doctorId) }, // Filter
 //       { $set: { status: "inactive" } } // Update
 //     ).then(async(value)=>{
-//       res.redirect('/adminPanel/VidhyA789/view-inactiveDoctors');
+//       res.redirect('/adminPanel/Vaidhya789/view-inactiveDoctors');
 //     });
 //   } catch (error) {
 //     console.error('Error updating doctor status:', error);
@@ -241,7 +241,7 @@ router.post('/deleteDoctorByAdmin/:_id', verifyLogin, async (req, res, next) => 
     await db.get().collection(collection.DOCTORS).deleteOne(
       { _id: ObjectID(doctorId) } // Filter
     ).then(async (value) => {
-      res.redirect('/adminPanel/VidhyA789/view-inactiveDoctors');
+      res.redirect('/adminPanel/Vaidhya789/view-inactiveDoctors');
     });
   } catch (error) {
     console.error('Error deleting doctor:', error);
