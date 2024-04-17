@@ -5,23 +5,21 @@
     <table class="table mt-4" id="churchTable">
       <thead>
         <tr>
-          <th scope="col">Id</th>
+          <th scope="col">#</th> 
           <th scope="col">Name</th>
           <th scope="col">Email</th>
           <th scope="col">Phone</th>
           <th scope="col">Speciality</th>
           <th scope="col">Category</th>
           <th scope="col">Refered By</th>
-          
           <th scope="col">Options</th>
           <th scope="col">Delete</th>
-          
         </tr>
       </thead>
       <tbody>
         {{#each doctors}}
          <tr>
-          <td>{{this._id}}</td>
+          <td>{{@index}}</td> <!-- Serial number starts from 0 -->
           <td>{{this.name}}</td>
           <td>{{this.username}}</td>
           <td>{{this.phone}}</td>
@@ -30,7 +28,7 @@
           <td>{{this.referId}}</td>
           <td><a href="/adminPanel/VidhyA789/view-doctor/{{this._id}}" class="btn btn-primary">View</a></td>
           <td>
-            <form action="/adminPanel/VidhyA789/deleteDoctorByAdmin/{{this._id}}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{this._id}}?')">
+            <form action="/adminPanel/VidhyA789/deleteDoctorByAdmin/{{this._id}}" method="POST" onsubmit="return confirm('Are you sure you want to delete? \n\nUsername: {{this.username}} \nPhone: {{this.phone}}')">
               <button type="submit" class="btn btn-danger">Delete</button>
             </form>
           </td>

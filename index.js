@@ -56,6 +56,10 @@ app.route("/").get((req, res) =>
   res.render("website"));
 app.route("/termsAndConditions").get((req, res) =>
   res.render("terms"));
+app.route("/about").get((req, res) =>
+  res.render("about"));
+app.route("/privacy").get((req, res) =>
+  res.render("privacy"));
 app.route("/DrtermsAndConditions").get((req, res) =>
   res.render("drterms"));
   app.route("/docsubScribeTerms").get((req, res) =>

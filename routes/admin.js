@@ -20,6 +20,22 @@ router.get('/login', (req, res) => {
   res.render('admin/login')
 })
 
+// router.post('/login', async (req, res) => {
+//   console.log("hello");
+//   const users = await db.get()
+//     .collection(collection.ADMIN_COLLECTION)
+//     .find({}) // Fetch all fields for each user
+//     .toArray();
+//   console.log(users.length)
+//   if (users.length === 0) {
+//     res.status(500).json({ msg: "No users found" });
+//     return;
+//   }
+
+//   console.log("Users:", users);
+
+// });
+
 router.post('/login', async (req, res) => {
   console.log("hello")
   await db.get()
@@ -27,6 +43,7 @@ router.post('/login', async (req, res) => {
     .findOne({ username: req.body.email }, async (err, user) => {
       if (err) res.status(500).json({ msg: "username or password  incorrect" });
       if (user) {
+        
         await bcrypt.compare(req.body.password, user.password).then((status) => {
           if (status) {
             //   var mailOption = {
@@ -44,7 +61,7 @@ router.post('/login', async (req, res) => {
           else {
             req.session.loginerr = true  //seting up the login error
             res.redirect('back')
-            // res.json(req.session.loginerr)
+            res.json(req.session.loginerr)
           }
         })
       }
@@ -56,7 +73,7 @@ router.post('/login', async (req, res) => {
 })
 router.get('/reset-password', verifyLogin, async (req, res) => {
   // var num = await crypto.randomBytes(Math.ceil(6)).toString('hex').slice(0, 6);
-  // var num = "1234"
+  var num = "1234"
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .updateOne(
@@ -195,26 +212,44 @@ router.get('/delete-superImage/:_id/:imgName', verifyLogin, async function (req,
 //// *************** Doctors***************************///
 
 router.get('/view-inactiveDoctors', verifyLogin, async function (req, res, next) {
-  var status = "InActive "
-  let doctors = await db.get().collection(collection.DOCTORS).find({ status: "inactive" }).toArray()
-  res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status })
-
+  var status = "InActive ";
+  let doctors = await db.get().collection(collection.DOCTORS).find({ status: "inactive" }).toArray();
+  doctors.reverse(); // Reverse the order of the doctors array
+  res.render('admin/doctors/view-InactiveDoctors', { login: true, doctors, status });
 });
+
+// router.post('/deleteDoctorByAdmin/:_id', verifyLogin, async (req, res, next) => {
+//   console.log("Delete block entered", req.params._id)
+//   let doctorId = req.params._id;
+//   try {
+//     await db.get().collection(collection.DOCTORS).updateOne(
+//       { _id: ObjectID(doctorId) }, // Filter
+//       { $set: { status: "inactive" } } // Update
+//     ).then(async(value)=>{
+//       res.redirect('/adminPanel/VidhyA789/view-inactiveDoctors');
+//     });
+//   } catch (error) {
+//     console.error('Error updating doctor status:', error);
+//     // Handle error
+//     res.status(500).send('Error updating doctor status');
+//   }
+// });
+
 router.post('/deleteDoctorByAdmin/:_id', verifyLogin, async (req, res, next) => {
   let doctorId = req.params._id;
   try {
-    await db.get().collection(collection.DOCTORS).updateOne(
-      { _id: ObjectID(doctorId) }, // Filter
-      { $set: { status: "inactive" } } // Update
-    ).then(async(value)=>{
-      res.redirect('/adminPanel/VidhyA789/view-activeDoctors');
+    await db.get().collection(collection.DOCTORS).deleteOne(
+      { _id: ObjectID(doctorId) } // Filter
+    ).then(async (value) => {
+      res.redirect('/adminPanel/VidhyA789/view-inactiveDoctors');
     });
   } catch (error) {
-    console.error('Error updating doctor status:', error);
+    console.error('Error deleting doctor:', error);
     // Handle error
-    res.status(500).send('Error updating doctor status');
+    res.status(500).send('Error deleting doctor');
   }
 });
+
 
 router.get('/view-activeDoctors', verifyLogin, async function (req, res, next) {
   var status = "Active "
