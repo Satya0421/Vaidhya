@@ -83,9 +83,9 @@ app.post('/register1', async (req, res) => {
               if (result.acknowledged) {
                 request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ code +'&flash=0&numbers='+(req.body.phone),function(err,res,body){
                     if (!err && res.statusCode === 200) {
-                        console.log("body") // Print the google web page.
+                        console.log(body) // Print the google web page.
                      } 
-                     console.log("res") 
+                     console.log(res) 
                   })
                 // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
                 console.log(result.insertedId)
