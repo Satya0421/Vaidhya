@@ -49,8 +49,8 @@ app.use("/adminPanel/Vaidhya/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
 
-// const commonRoute = require("./routes/common");
-// app.use("/common", commonRoute);
+const commonRoute = require("./routes/common");
+app.use("/common", commonRoute);
 
 const websiteRoute = require("./routes/registration");
 app.use("/register", websiteRoute);

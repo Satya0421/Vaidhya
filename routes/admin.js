@@ -43,7 +43,7 @@ router.post('/login', async (req, res) => {
     .findOne({ username: req.body.email }, async (err, user) => {
       if (err) res.status(500).json({ msg: "username or password  incorrect" });
       if (user) {
-        
+        console.log(req.body.password)
         await bcrypt.compare(req.body.password, user.password).then((status) => {
           if (status) {
             //   var mailOption = {
@@ -63,6 +63,8 @@ router.post('/login', async (req, res) => {
             res.redirect('back')
             res.json(req.session.loginerr)
           }
+        }).catch((err)=> {
+          console.log(err)
         })
       }
       else {
@@ -77,7 +79,7 @@ router.get('/reset-password', verifyLogin, async (req, res) => {
   await db.get()
     .collection(collection.ADMIN_COLLECTION)
     .updateOne(
-      { username: 'sibinjames.sibin@gmail.com' },
+      { username: 'admin@vaidhya.co.in' },
       {
         $set: {
           code: num
@@ -98,7 +100,7 @@ router.get('/reset-password', verifyLogin, async (req, res) => {
           res.render('admin/resetpassword', { login: true })
         }
         else
-          return res.status(500).send({ msg: "Error to process...Try once more" });
+          return res.status(500).send({ msg: "Error to process...Try once more {invalid code access}" });
       },
     )
 });
@@ -106,7 +108,7 @@ router.post('/reset-password', verifyLogin, async (req, res) => {
   if (req.body.newpassword == req.body.repassword) {
     await db.get()
       .collection(collection.ADMIN_COLLECTION)
-      .findOne({ username: 'sibinjames.sibin@gmail.com' }, async (err, user) => {
+      .findOne({ username: 'admin@vaidhya.co.in' }, async (err, user) => {
         await bcrypt.compare(req.body.currentpassword, user.password).then(async (status) => {
           if (status) {
             req.body.newpassword = await bcrypt.hash(req.body.newpassword, 8);
@@ -114,7 +116,7 @@ router.post('/reset-password', verifyLogin, async (req, res) => {
             await db.get()
               .collection(collection.ADMIN_COLLECTION)
               .updateOne(
-                { $and: [{ username: 'sibinjames.sibin@gmail.com' }, { code: req.body.code }] },
+                { $and: [{ username: 'admin@vaidhya.co.in' }, { code: req.body.code }] },
                 {
                   $set: {
                     password: req.body.newpassword,
@@ -265,9 +267,14 @@ router.get('/view-unSubscribed', verifyLogin, async function (req, res, next) {
 });
 router.get('/view-expiringDoctors', verifyLogin, async function (req, res, next) {
   var status = "Expiring Doctors "
-  let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, doctors: 1 }).toArray()
-  var data = list[0].doctors
+  // let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, doctors: 1 }).toArray()
+     let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, doctors: 1 }).toArray()
+     var data = []
+    if (list.length > 0 && list[0].doctors) {
+        data = list[0].doctors;
+    } 
 
+  console.log(data)
   res.render('admin/doctors/expiringDoctorList', { login: true, data, status })
 
 });
@@ -807,14 +814,19 @@ router.get('/addAyurvedicDepartment', verifyLogin, async function (req, res, nex
   var status = "Ayurvedic Departments "
   var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
-  if (out[0].ayurvedicDepartment != "") {
+  if (out[0] && out[0].ayurvedicDepartment && out[0].ayurvedicDepartment !== "") {
     var result = out[0].ayurvedicDepartment;
-    // //console.log(result)
-    res.render('admin/listdata/AyurvedicdepartmentList', { login: true, status, result })
-  }
-  else {
-    res.redirect('back');
-  }
+    // console.log(result)
+    res.render('admin/listdata/AyurvedicdepartmentList', { login: true, status, result });
+  } else {
+    // Handle the case where out[0] or its ayurvedicDepartment property is undefined or empty
+    // For example, you could render an error page or return a message to the user
+    // res.render('error', { message: 'Ayurvedic department data not found' });
+    var result = [];
+    res.render('admin/listdata/AyurvedicdepartmentList', { login: true, status, result });
+    // res.redirect('back');
+}
+ 
 
 });
 router.post('/addAyurvedicDepartment', async (req, res) => {
@@ -860,14 +872,18 @@ router.get('/addGeneralDepartment', verifyLogin, async function (req, res, next)
   var status = "General Departments "
   var out = await db.get().collection(collection.LISTOFITEMS).find().toArray();
   // {projection: { _id: 0, cities: 1 }}
-  if (out[0].generaldepartments != "") {
+
+  if (out[0] && out[0].generaldepartments && out[0].generaldepartments !== "") {
     var result = out[0].generaldepartments;
-    // //console.log(result)
-    res.render('admin/listdata/GeneralDepartmentList', { login: true, status, result })
-  }
-  else {
-    res.redirect('back');
-  }
+    // console.log(result)
+    res.render('admin/listdata/GeneralDepartmentList', { login: true, status, result });
+  } else {
+    var result = [];
+    res.render('admin/listdata/GeneralDepartmentList', { login: true, status, result });
+    // res.redirect('back');
+}
+
+  
 
 });
 router.post('/addGeneralDepartment', verifyLogin, async (req, res) => {
@@ -974,8 +990,12 @@ router.get('/view-hospital/unSubscribe/:_id', verifyLogin, async function (req, 
 router.get('/view-expiringHospital', verifyLogin, async function (req, res, next) {
   var status = "Expiring Hospital "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, hospital: 1 }).toArray()
-  var data = list[0].hospital
-  // console.log(data)
+
+  var data = []
+  if (list.length > 0 && list[0].hospital) {
+      data = list[0].hospital;
+  } 
+  
   res.render('admin/hospital/expiringHospitalList', { login: true, data, status })
 
 });
@@ -1097,7 +1117,10 @@ router.get('/view-pharmacy/active/:_id', verifyLogin, async function (req, res, 
 router.get('/view-expiringPharmacy', verifyLogin, async function (req, res, next) {
   var status = "Expiring Pharmacy "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, pharmacy: 1 }).toArray()
-  var data = list[0].pharmacy
+  var data = []
+  if (list.length > 0 && list[0].pharmacy) {
+      data = list[0].pharmacy;
+  } 
   // console.log(data)
   res.render('admin/pharmacy/expiringPharmacyList', { login: true, data, status })
 
@@ -1219,7 +1242,10 @@ router.get('/view-nurse/active/:_id', verifyLogin, async function (req, res, nex
 router.get('/view-expiringNurce', verifyLogin, async function (req, res, next) {
   var status = "Expiring Nurce "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, nurse: 1 }).toArray()
-  var data = list[0].nurse
+  var data = []
+    if (list.length > 0 && list[0].nurse) {
+        data = list[0].nurse;
+    } 
   // console.log(data)
   res.render('admin/nurse/expiringNurceList', { login: true, data, status })
 
@@ -1359,7 +1385,10 @@ router.get('/view-lab/active/:_id', verifyLogin, async function (req, res, next)
 router.get('/view-expiringLab', verifyLogin, async function (req, res, next) {
   var status = "Expiring Lab "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, lab: 1 }).toArray()
-  var data = list[0].lab
+  var data = []
+    if (list.length > 0 && list[0].lab) {
+        data = list[0].lab;
+    } 
   // console.log(data)
   res.render('admin/lab/expiringLabList', { login: true, data, status })
 
@@ -1500,7 +1529,10 @@ router.get('/view-ambulance/active/:_id', verifyLogin, async function (req, res,
 router.get('/view-expiringAmbulance', verifyLogin, async function (req, res, next) {
   var status = "Expiring Ambulance "
   let list = await db.get().collection(collection.EXPIRING_COLLECTION).find({}).project({ _id: 0, ambulance: 1 }).toArray()
-  var data = list[0].ambulance
+  var data = []
+  if (list.length > 0 && list[0].ambulance) {
+      data = list[0].ambulance;
+  } 
   // console.log(data)
   res.render('admin/ambulance/expiringAmbulanceList', { login: true, data, status })
 

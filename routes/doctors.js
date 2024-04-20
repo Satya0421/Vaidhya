@@ -33,140 +33,257 @@ const upload = multer();
 
 
 //// ***************Registration***************************///
-app.post('/register1', async (req, res) => {
-  // //console.log(req.body)
-  var resu = false;
-  await db.get()
-    .collection(collection.DOCTORS).findOne({ $or: [{ phone: req.body.phone }, { username: req.body.email }] }, async (err, result) => {
-      if (err) {
-        // //console.log(err)
-        return res.status(500).json({ msg: "Error to process... Try once more" });
-      }
-      if (result) {
-        return res.status(403).json({ msg: "User Already exist" });
-      }
-      else {
-        var pass = await bcrypt.hash(req.body.password, 8);
+// app.post('/register1', async (req, res) => {
+//   // //console.log(req.body)
+//   var resu = false;
+//   await db.get()
+//     .collection(collection.DOCTORS).findOne({ $or: [{ phone: req.body.phone }, { username: req.body.email }] }, async (err, result) => {
+//       if (err) {
+//         // //console.log(err)
+//         return res.status(500).json({ msg: "Error to process... Try once more" });
+//       }
+//       if (result) {
+//         return res.status(403).json({ msg: "User Already exist" });
+//       }
+//       else {
+//         var pass = await bcrypt.hash(req.body.password, 8);
 
-        var j = 0
-        start:
-        while (1) {
-          var code = Math.floor(1000 + Math.random() * 9000)
-          let num = req.body.name.substring(0, req.body.name.indexOf(' ')) + code;
-          // for (let i = 0; i < 8; i++) {
-          //   const randomIndex = Math.floor(Math.random() * chars.length);
-          //   num += chars[randomIndex];
-          // }
-          await db.get()
-            .collection(collection.DOCTORS)
-            .insertOne(
-              {
-                password: pass,
-                name: req.body.name,
-                phone: req.body.phone,
-                username: req.body.email,
-                lvl: "1",
-                code: code,
-                status: "inactive",
-                referId: num,
-                location: {
-                  type: "Point",
-                  coordinates: [
-                    parseFloat(req.body.latitude),
-                    parseFloat(req.body.longtitude),
-                  ]
+//         var j = 0
+//         start:
+//         while (1) {
+//           var code = Math.floor(1000 + Math.random() * 9000)
+//           let num = req.body.name.substring(0, req.body.name.indexOf(' ')) + code;
+//           // for (let i = 0; i < 8; i++) {
+//           //   const randomIndex = Math.floor(Math.random() * chars.length);
+//           //   num += chars[randomIndex];
+//           // }
+//           await db.get()
+//             .collection(collection.DOCTORS)
+//             .insertOne(
+//               {
+//                 password: pass,
+//                 name: req.body.name,
+//                 phone: req.body.phone,
+//                 username: req.body.email,
+//                 lvl: "1",
+//                 code: code,
+//                 status: "inactive",
+//                 referId: num,
+//                 location: {
+//                   type: "Point",
+//                   coordinates: [
+//                     parseFloat(req.body.latitude),
+//                     parseFloat(req.body.longtitude),
+//                   ]
+//                 }
+//               }
+//             )
+//             .then((result) => {
+//               // console.log(result)
+//               if (result.acknowledged) {
+//                 request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ code +'&flash=0&numbers='+(req.body.phone),function(err,res,body){
+//                     if (!err && res.statusCode === 200) {
+//                         console.log(body) // Print the google web page.
+//                      } 
+//                      console.log(res) 
+//                   })
+//                 // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
+//                 console.log(result.insertedId)
+//                 return res.status(200).json({ _id: result.insertedId })
+//               }
+//             })
+//             .catch(() => {
+//               resu = true;
+//             });
+//           if (resu) {
+//             if (j != 2) {
+//               j++;
+//               continue  start;
+//             }
+//             else
+//               return res.status(500).json({ msg: "Error to process... Try once more" });
+//           }
+//           else {
+//             break start;
+//           }
+//         }
+//       }
+//     });
+// })
+
+// --------------- FIrst Register and  OTP Verification ------------------
+
+app.post("/register1", async (req, res) => {
+  try{
+
+     const phone = req.body.phone;
+     const name = req.body.name;
+     const email =  req.body.email;
+     const gender = req.body.gender;
+     const dob = req.body.dob;
+
+      const user = await db.get().collection(collection.COMMON).findOne({phone:phone, code:"0"})  
+      // console.log(user)
+      var code = Math.floor(1000 + Math.random() * 9000)
+      let num = req.body.name.substring(0, req.body.name.indexOf(' ')) + code;
+
+      if (user){
+        const result = await db.get()
+              .collection(collection.DOCTORS)
+              .insertOne(
+                {
+                    phone:phone,
+                    name: name,
+                    username: email, 
+                    gender:gender,
+                    dob: dob,
+                    lvl: "1",
+                    status: "inactive",
+                    referId: num
                 }
-              }
-            )
-            .then((result) => {
-              // console.log(result)
-              if (result.acknowledged) {
-                request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ code +'&flash=0&numbers='+(req.body.phone),function(err,res,body){
-                    if (!err && res.statusCode === 200) {
-                        console.log(body) // Print the google web page.
-                     } 
-                     console.log(res) 
-                  })
-                // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: 'Welcome To Vaidhya Mobile Application .\n  your code is :' + code + "\n ", numbers: [parseInt(req.body.phone)] })
-                console.log(result.insertedId)
-                return res.status(200).json({ _id: result.insertedId })
-              }
-            })
-            .catch(() => {
-              resu = true;
-            });
-          if (resu) {
-            if (j != 2) {
-              j++;
-              continue  start;
-            }
-            else
-              return res.status(500).json({ msg: "Error to process... Try once more" });
-          }
-          else {
-            break start;
-          }
+              
+              )   
+                   
+        if(result.acknowledged){
+          await db.get()
+                .collection(collection.COMMON)
+                .deleteOne({
+                _id: user._id
+                })
+                .then((result) => {
+                    if (result.deletedCount == 1) {
+                    }
+                })
         }
-      }
-    });
-})
-app.post("/verifyPhone", async (req, res) => {
-  //console.log(req.body)
-  await db.get()
-    .collection(collection.DOCTORS)
-    .updateOne(
-      { $and: [{ _id: ObjectID(req.body._id) }, { code: req.body.code }] },
-      {
-        $set: {
-          lvl: "2",
-          code: 0
-        },
-      }, (err, result) => {
-        if (err) return res.status(500).json({ msg: "Error to process...Try once more" });
+        console.log(result)
 
-        if (result.modifiedCount == 1) {
-          return res.status(200).json({ msg: "Suceessfully verified" });
-        } else {
-          return res.status(500).json({ msg: "code not match" });
-        }
-      },
-    );
+        return res.status(200).json({ msg: "First Registration Completed", lvl:"1", _id:result.insertedId.toString()});
+
+              
+      } else {
+
+              return res.status(200).json({ msg: "OTP not verified, please try again" });
+      }
+
+
+  } catch (error) {
+      console.error("Error registering user:", error);
+      return res.status(500).json({ msg: "Error registering user" });
+  }
+
 });
-app.post('/resendCode', async (req, res) => {
-  await db.get()
-    .collection(collection.DOCTORS)
-    .findOne(
-      { _id: ObjectID(req.body._id) },
-      async (err, profile) => {
-        request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ profile.code +'&flash=0&numbers='+(profile.phone),function(err,res,body){
-                    if (!err && res.statusCode === 200) {
-                        console.log(body) // Print the google web page.
-                     } 
-                     console.log(res) 
-                  })
-        // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
-        return res.status(200).json()
-      },
-    )
-});
+
+
+
+
+// app.post("/verifyPhone", async (req, res) => {
+//   //console.log(req.body)
+//   await db.get()
+//     .collection(collection.DOCTORS)
+//     .updateOne(
+//       { $and: [{ _id: ObjectID(req.body._id) }, { code: req.body.code }] },
+//       {
+//         $set: {
+//           lvl: "2",
+//           code: 0
+//         },
+//       }, (err, result) => {
+//         if (err) return res.status(500).json({ msg: "Error to process... Try once more" });
+
+//         if (result.modifiedCount == 1) {
+//           return res.status(200).json({ msg: "Suceessfully verified" });
+//         } else {
+//           return res.status(500).json({ msg: "Code not match" });
+//         }
+//       },
+//     );
+// });
+
+
+// app.post('/resendCode', async (req, res) => {
+//   await db.get()
+//     .collection(collection.DOCTORS)
+//     .findOne(
+//       { _id: ObjectID(req.body._id) },
+//       async (err, profile) => {
+//         request.get('https://www.fast2sms.com/dev/bulkV2?authorization='+process.env.API_KEY+'&route=otp&variables_values='+ profile.code +'&flash=0&numbers='+(profile.phone),function(err,res,body){
+//                     if (!err && res.statusCode === 200) {
+//                         console.log(body) // Print the google web page.
+//                      } 
+//                      console.log(res) 
+//                   })
+//         // fast2sms.sendMessage({ authorization: process.env.API_KEY, message: ' One time Verification Code is :' + profile.code + "\n ", numbers: [parseInt(profile.phone)] })
+//         return res.status(200).json()
+//       },
+//     )
+// });
+
+
+
+// app.post('/register2', async (req, res) => {
+//   //console.log(req.body)
+//   await db.get()
+//     .collection(collection.DOCTORS)
+//     .updateOne(
+//       { _id: ObjectID(req.body._id) },
+//       {
+//         $set:
+//         {
+//           lvl: "3",
+//           qualifications: req.body.qualifications,
+//           specality: req.body.specality,
+//           gender: req.body.gender,
+//           city: req.body.city,
+//           category: req.body.category,
+//           experience: req.body.experience,
+//           address: req.body.address,
+//           dob: req.body.dob
+//         }
+//       }
+//     )
+//     .then((result, err) => {
+//       if (result.modifiedCount == 1) {
+//         return res.status(200).json({ msg: "Successfull" });
+//       }
+//       if (err)
+//         res.status(500).json({ msg: "Error to process...Try once more" });
+//     })
+//     .catch(() => {
+//       return res.status(500).json({ msg: "Error to process... Try once more" });
+//     });
+// });
+
 app.post('/register2', async (req, res) => {
   //console.log(req.body)
+  const _id = req.body._id;
+  const idproff = req.body.idproff;
+  const city = req.body.city;
+  const businessname = req.body.businessname;
+  const address = req.body.address;
+  const latitude = req.body.latitude;
+  const longitude = req.body.longitude;
+  const website = req.body.website;
+
   await db.get()
     .collection(collection.DOCTORS)
     .updateOne(
-      { _id: ObjectID(req.body._id) },
+      { _id: ObjectID(_id) },
       {
         $set:
         {
           lvl: "3",
-          qualifications: req.body.qualifications,
-          specality: req.body.specality,
-          gender: req.body.gender,
-          city: req.body.city,
-          category: req.body.category,
-          experience: req.body.experience,
-          address: req.body.address,
-          dob: req.body.dob
+          city: city,
+          businessname: businessname,
+          address: address,
+          location: {
+            type: "Point",
+            coordinates: [
+              parseFloat(latitude),
+              parseFloat(longitude),
+            ]
+          },
+          website: website,
+          idproff: idproff
         }
       }
     )
@@ -180,7 +297,10 @@ app.post('/register2', async (req, res) => {
     .catch(() => {
       return res.status(500).json({ msg: "Error to process... Try once more" });
     });
-})
+});
+
+
+
 app.post('/register3', async (req, res) => {
   await db.get()
     .collection(collection.DOCTORS)
@@ -210,11 +330,12 @@ app.post('/register3', async (req, res) => {
     });
 })
 
-app.patch("/upload_profile_image/:_id", async (req, res) => {
+app.patch("/upload_profile_image/:phone", async (req, res) => {
   let image = req.files.img
-  image.mv('./uploads/DoctorsImage/' + req.params._id + ".jpg")
+  image.mv('./uploads/DoctorsImage/' + req.params.phone + ".jpg")
   return res.status(200).json();
 });
+
 app.patch("/upload_DoctorsIdProof/:_id", async (req, res) => {
   let image = req.files.img
   image.mv('./uploads/DoctorsIdProof/' + req.params._id + ".jpg")
