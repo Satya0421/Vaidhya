@@ -19,42 +19,114 @@
 
 <body>
 
+{{!-- <style>
+  .mydropdown-menu {
+    position: relative;
+  }
+
+  .mydrop_container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    overflow: hidden;
+    max-height: 0;
+  }
+
+  .mydrop_container.show {
+    max-height: 300px;
+    transition: max-height 0.3s ease-in;
+  }
+
+  .mydrop_container.hide {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .mydrop_container > .item {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    padding: 10px 0px 0px 0px;
+  }
+</style> --}}
+{{!-- <div class="mydropdown-menu">
+  <div class="mymenu-btn">Two</div>
+  <div class="mydrop_container">
+    <a class="item" href="#">Contact Us</a>
+    <a class="item" href="#">Visit Us</a>
+  </div>
+</div>
+<script>
+      var dropdownBtn = document.querySelectorAll('.mymenu-btn');
+      //Add this for toggling dropdown
+      lastOpened = null;
+      dropdownBtn.forEach(btn => btn.addEventListener('click', function() {
+        var menuContent = this.nextElementSibling;
+        if (!menuContent.classList.contains("show")) {
+        menuContent.classList.add("show");
+        menuContent.classList.remove("hide");
+        } else {
+        menuContent.classList.add("hide");
+        menuContent.classList.remove("show");
+        }       
+        //Add this for toggling dropdown
+        if (lastOpened && lastOpened !== menuContent)
+            lastOpened.classList.remove("show");
+            lastOpened = menuContent;
+      }));
+  </script> --}}
   <!-- Back to top button -->
   <div class="back-to-top"></div>
   
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="/"> <img src="assets/img/logo.png" / height="90px"></a>
-   
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      <button class="navbar-toggler"  type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent" style="padding-left: 70%;  ">
+        {{!-- <span class="navbar-toggler-icon"></span> --}}
+
+         <div class="dropdown">
+              <a class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                 aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+              </a>
+              <div style="min-width: 0rem;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" aria-current="page" href="/">Home</a>
+                  <div style="height:15px"></div>
+                  <a class="dropdown-item" id="go-to-bottom" aria-current="page" onclick="goToBottom()" href="#">Contact</a>
+                  
+              </div>
+          </div>
+      </button>      
+    </div>
+
+       
+      <div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-right:10%">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="go-to-bottom" aria-current="page" href="/contact">Contact</a>
+            <a class="nav-link" onclick="goToBottom()" aria-current="page" href="">Contact</a>
           </li>
           <script>
-              document.addEventListener("DOMContentLoaded", function() {
-                  var contactLink = document.getElementById("go-to-bottom");
-                  contactLink.addEventListener("click", function(event) {
-                      event.preventDefault(); // Prevent default link behavior
+
+              function goToBottom(){
+event.preventDefault(); // Prevent default link behavior
                       var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
                       window.scrollTo({
                           top: scrollHeight,
                           behavior: "smooth" // Smooth scrolling
                       });
-                  });
-              });
+              }
          </script>
+
           <li class="nav-item">
             {{!-- <a class="nav-link" href="#">Link</a> --}}
           </li>
-          <li class="nav-item dropdown">
+          {{!-- <li class="nav-item dropdown">
             <div class="dropdown">
               <a class="btn  dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
@@ -73,7 +145,7 @@
                 </a>
               </div>
             </div>
-          </li>
+          </li> --}}
 
       </div>
     </div>
@@ -317,7 +389,8 @@
           <ul class="footer-menu">
             <li><a href="#" onclick="showAboutModal(event)">About Us</a></li>
             <li><a href="#" onclick="showTermsModal(event)">Terms & Condition</a></li>
-            <li><a href="#" onclick="showPrivacyModal(event)">Privacy</a></li>
+            <li><a href="#" onclick="showPrivacyModal(event)">Privacy Policy</a></li>
+            <li><a href="#" onclick="showTransactionsModal(event)">Cancellation Policy</a></li>
           </ul>
         </div>
 <style>
@@ -411,7 +484,7 @@
 
 <!-- Modal -->
 <div id="customModal" class="modal" onclick="closeTermsModal()">
-  <div class="modal-content" style="background-color: none; border: none; border-radius:20px; padding:0px 0px 0px 0px" onclick="event.stopPropagation()">
+  <div class="modal-content" style="background-color: none; border: none; border-radius:20px; background:none; padding: 10px 10px 10px 10px;" onclick="event.stopPropagation()">
     <div class="upper">
       <span id="modalTitle" class="mmodal-text"></span>
       <span class="mclose" onclick="closeTermsModal()">&times;</span>
@@ -426,6 +499,33 @@
 
 <script>
   
+function showAboutModal(event) {
+    event.preventDefault();
+    var url = '/about';
+    fetch(url)
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('customContent').innerHTML = data;
+         document.getElementById('modalTitle').textContent = 'About Us';
+        document.getElementById('customModal').style.display = 'block';
+      })
+      .catch(error => console.error('Error fetching terms:', error));
+  }
+
+  function showTermsModal(event) {
+    event.preventDefault();
+    var url = '/termsAndConditions';
+    fetch(url)
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('customContent').innerHTML = data;
+        document.getElementById('customContent').style.height = "600px";
+        document.getElementById('modalTitle').textContent = 'Terms & Condition';
+        document.getElementById('customModal').style.display = 'block';
+      })
+      .catch(error => console.error('Error fetching terms:', error));
+  }
+
   function showPrivacyModal(event) {
     event.preventDefault();
     var url ='/privacy';
@@ -439,27 +539,15 @@
       })
       .catch(error => console.error('Error fetching terms:', error));
   }
-function showAboutModal(event) {
+ function showTransactionsModal(event) {
     event.preventDefault();
-    var url = '/about';
+    var url = '/paymentAndCancellation';
     fetch(url)
       .then(response => response.text())
       .then(data => {
         document.getElementById('customContent').innerHTML = data;
-         document.getElementById('modalTitle').textContent = 'About Us';
-        document.getElementById('customModal').style.display = 'block';
-      })
-      .catch(error => console.error('Error fetching terms:', error));
-  }
-  function showTermsModal(event) {
-    event.preventDefault();
-    var url = '/termsAndConditions';
-    fetch(url)
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('customContent').innerHTML = data;
-        document.getElementById('customContent').style.height = "600px";
-        document.getElementById('modalTitle').textContent = 'Terms & Condition';
+           document.getElementById('customContent').style.height = "600px";
+         document.getElementById('modalTitle').textContent = 'Cancellation & Refund Policy';
         document.getElementById('customModal').style.display = 'block';
       })
       .catch(error => console.error('Error fetching terms:', error));

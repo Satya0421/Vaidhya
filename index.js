@@ -48,6 +48,10 @@ const adminRoute = require("./routes/admin");
 app.use("/adminPanel/Vaidhya/", adminRoute);
 const doctorRoute = require("./routes/doctors");
 app.use("/doctors", doctorRoute);
+
+const commonRoute = require("./routes/common");
+app.use("/common", commonRoute);
+
 const websiteRoute = require("./routes/registration");
 app.use("/register", websiteRoute);
 //  app.route("/").get((req, res) => 
@@ -56,6 +60,8 @@ app.route("/").get((req, res) =>
   res.render("website"));
 app.route("/termsAndConditions").get((req, res) =>
   res.render("terms"));
+app.route("/paymentAndCancellation").get((req, res) =>
+  res.render("transactions"));
 app.route("/about").get((req, res) =>
   res.render("about"));
 app.route("/privacy").get((req, res) =>
